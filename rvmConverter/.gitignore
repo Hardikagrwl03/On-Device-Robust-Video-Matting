@@ -1,0 +1,12 @@
+*.pth
+*.tflite
+
+/tflite_models/
+/RobustVideoMatting/checkpoints/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Editor-specific config
+/.vscode/

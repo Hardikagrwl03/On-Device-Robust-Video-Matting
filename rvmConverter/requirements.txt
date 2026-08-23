@@ -1,0 +1,20 @@
+# torch/torchvision are pinned to the exact pair litert-torch's own CI tests
+# against (see requirements.txt in google-ai-edge/litert-torch). The original
+# RVM inference pins (torch==1.9.0, torchvision==0.10.0) are incompatible with
+# litert_torch, which requires torch.export (torch>=2.4, introduced in 2.1) --
+# they cannot be installed in the same environment.
+torch==2.12.0
+torchvision==0.27.0
+
+# litert_torch's PyPI distribution name is litert-torch; the import name
+# stays litert_torch. ai-edge-litert is its runtime interpreter, used here to
+# load/verify the exported .tflite file locally.
+litert-torch==0.9.3
+ai-edge-litert==2.1.6
+
+# av==8.0.3 / pims==0.5 (the original RVM pins) ship no prebuilt wheels for
+# Python >=3.10, which litert_torch requires -- bumped to the nearest
+# versions with prebuilt wheels for this interpreter.
+av==13.1.0
+pims==0.7
+tqdm==4.67.1

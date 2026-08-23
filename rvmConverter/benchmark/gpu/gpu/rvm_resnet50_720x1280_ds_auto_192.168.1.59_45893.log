@@ -1,0 +1,543 @@
+INFO: STARTING!
+INFO: Log parameter values verbosely: [1]
+INFO: Min num runs: [10]
+INFO: Min runs duration (seconds): [1]
+INFO: Max runs duration (seconds): [150]
+INFO: Inter-run delay (seconds): [-1]
+INFO: Number of prorated runs per second: [-1]
+INFO: Num threads: [-1]
+INFO: Use caching: [0]
+INFO: Benchmark name: []
+INFO: Output prefix: []
+INFO: Min warmup runs: [1]
+INFO: Min warmup runs duration (seconds): [0.5]
+INFO: Run w/o invoking kernels: [0]
+INFO: Report the peak memory footprint: [0]
+INFO: Memory footprint check interval (ms): [50]
+INFO: Graph: [/data/local/tmp/rvm_benchmark/rvm_resnet50_720x1280_ds_auto.tflite]
+INFO: Signature to run: []
+INFO: Input layers: []
+INFO: Input shapes: []
+INFO: Input value ranges: []
+INFO: Input value files: []
+INFO: Allow fp16: [0]
+INFO: Require full delegation: [0]
+INFO: Enable op profiling: [1]
+INFO: Op profiling output mode.: [stdout]
+INFO: Op profiling output file.: []
+INFO: Max initial profiling buffer entries: [1024]
+INFO: Allow dynamic increase on profiling buffer entries: [0]
+INFO: CSV File to export profiling data to: []
+INFO: Enable Model Runtime Info Export: [0]
+INFO: Proto File to export model runtime info to: []
+INFO: Print pre-invoke interpreter state: [0]
+INFO: Print post-invoke interpreter state: [0]
+INFO: Release dynamic tensor memory: [0]
+INFO: Optimize memory usage for large tensors: [0]
+INFO: Disable delegate clustering: [0]
+INFO: Constant CAST output cache: [0]
+INFO: File path to export outputs layer to: []
+INFO: File path to export outputs layer as tf example to: []
+INFO: Tensor name display length: [25]
+INFO: Tensor type display length: [15]
+INFO: Tensor allocation type display length: [18]
+INFO: print out all supported flags: [0]
+INFO: #threads used for CPU inference: [-1]
+INFO: Max number of delegated partitions: [0]
+INFO: Min nodes per partition: [0]
+INFO: Index of the first node that could be delegated: [0]
+INFO: Index of the last node that could be delegated: [2147483647]
+INFO: Number of GPU delegate invoke loop iterations: [1]
+INFO: Directory for delegate serialization: []
+INFO: Model-specific token/key for delegate serialization.: []
+INFO: External delegate path: []
+INFO: External delegate options: []
+INFO: Use gpu: [1]
+INFO: Allow lower precision in gpu: [1]
+INFO: Enable running quant models in gpu: [1]
+INFO: Prefer maximizing the throughput in gpu: [0]
+INFO: GPU backend: []
+INFO: Use Hexagon: [0]
+INFO: Hexagon lib path: [/data/local/tmp]
+INFO: Hexagon profiling: [0]
+INFO: Use NNAPI: [0]
+INFO: Use xnnpack: [0]
+INFO: xnnpack_force_fp16: [0]
+INFO: xnnpack_weight_cache_file_path: []
+INFO: Use Slinky: [0]
+INFO: Loaded model /data/local/tmp/rvm_benchmark/rvm_resnet50_720x1280_ds_auto.tflite
+INFO: GPU delegate created.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite delegate for GPU.
+INFO: Loaded OpenCL library with dlopen.
+VERBOSE: Replacing 210 out of 210 node(s) with delegate (TfLiteGpuDelegateV2) node, yielding 1 partitions for subgraph 0.
+INFO: Initialized OpenCL-based API.
+INFO: Explicitly applied GPU delegate, and the model graph will be completely executed by the delegate.
+INFO: The input model file size (MB): 107.683
+INFO: Initialized session in 6935.92ms.
+INFO: Created 1 GPU delegate kernels.
+INFO: Running benchmark for at least 1 iterations and at least 0.5 seconds but terminate if exceeding 150 seconds.
+INFO: count=2 first=322133 curr=278872 min=278872 max=322133 avg=300502 std=21630 p5=278872 median=322133 p95=322133
+
+INFO: Running benchmark for at least 10 iterations and at least 1 seconds but terminate if exceeding 150 seconds.
+INFO: count=10 first=267737 curr=289228 min=262203 max=291243 avg=277576 std=10212 p5=262203 median=281700 p95=291243
+
+INFO: Inference timings in us: Init: 6935917, First inference: 322133, Warmup (avg): 300502, Inference (avg): 277576
+INFO: Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+INFO: Memory footprint delta from the start of the tool (MB): init=493.922 overall=493.922
+INFO: Profiling Info for Benchmark Initialization:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	 6930.836	 6930.836	 99.997%	 99.997%	500852.000	        1	ModifyGraphWithDelegate/0
+	                         AllocateTensors	    0.218	    0.218	  0.003%	100.000%	     0.000	        1	AllocateTensors/0
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	 6930.836	 6930.836	 99.997%	 99.997%	500852.000	        1	ModifyGraphWithDelegate/0
+	                         AllocateTensors	    0.218	    0.218	  0.003%	100.000%	     0.000	        1	AllocateTensors/0
+
+Number of nodes executed: 2
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                 ModifyGraphWithDelegate	        1	  6930.836	    99.997%	    99.997%	500852.000	        1
+	                         AllocateTensors	        1	     0.218	     0.003%	   100.000%	     0.000	        1
+
+Timings (microseconds): count=1 curr=6931054
+Memory (bytes): count=0
+2 nodes observed
+
+
+
+INFO: Operator-wise Profiling Info for Regular Benchmark Runs:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                                   mul 0	    0.547	    0.547	  0.782%	  0.782%	     0.000	        1	Delegate/mul 0:0
+	                                resize 1	    0.265	    0.263	  0.375%	  1.157%	     0.000	        1	Delegate/resize 1:1
+	              convolution_2d 3 -> relu 4	    0.906	    0.906	  1.295%	  2.453%	     0.000	        1	Delegate/convolution_2d 3 -> relu 4:2
+	                            pooling_2d 6	    0.233	    0.232	  0.331%	  2.784%	     0.000	        1	Delegate/pooling_2d 6:3
+	              convolution_2d 7 -> relu 8	    0.098	    0.099	  0.141%	  2.925%	     0.000	        1	Delegate/convolution_2d 7 -> relu 8:4
+	                    winograd_4x4_to_36 9	    0.158	    0.159	  0.226%	  3.152%	     0.000	        1	Delegate/winograd_4x4_to_36 9:5
+	          convolution_winograd_4x4_6x6 9	    0.261	    0.260	  0.372%	  3.524%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 9:6
+	         winograd_36_to_4x4 9 -> relu 10	    0.149	    0.152	  0.217%	  3.741%	     0.000	        1	Delegate/winograd_36_to_4x4 9 -> relu 10:7
+	                       convolution_2d 11	    0.316	    0.321	  0.458%	  4.199%	     0.000	        1	Delegate/convolution_2d 11:8
+	  convolution_2d 12 -> add 13 -> relu 14	    0.493	    0.495	  0.708%	  4.907%	     0.000	        1	Delegate/convolution_2d 12 -> add 13 -> relu 14:9
+	            convolution_2d 15 -> relu 16	    0.301	    0.301	  0.430%	  5.336%	     0.000	        1	Delegate/convolution_2d 15 -> relu 16:10
+	                   winograd_4x4_to_36 17	    0.155	    0.155	  0.221%	  5.557%	     0.000	        1	Delegate/winograd_4x4_to_36 17:11
+	         convolution_winograd_4x4_6x6 17	    0.263	    0.265	  0.379%	  5.936%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 17:12
+	        winograd_36_to_4x4 17 -> relu 18	    0.153	    0.154	  0.220%	  6.157%	     0.000	        1	Delegate/winograd_36_to_4x4 17 -> relu 18:13
+	  convolution_2d 19 -> add 20 -> relu 21	    0.489	    0.484	  0.692%	  6.848%	     0.000	        1	Delegate/convolution_2d 19 -> add 20 -> relu 21:14
+	            convolution_2d 22 -> relu 23	    0.301	    0.302	  0.432%	  7.280%	     0.000	        1	Delegate/convolution_2d 22 -> relu 23:15
+	                   winograd_4x4_to_36 24	    0.150	    0.157	  0.224%	  7.504%	     0.000	        1	Delegate/winograd_4x4_to_36 24:16
+	         convolution_winograd_4x4_6x6 24	    0.256	    0.258	  0.369%	  7.873%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 24:17
+	        winograd_36_to_4x4 24 -> relu 25	    0.147	    0.148	  0.211%	  8.085%	     0.000	        1	Delegate/winograd_36_to_4x4 24 -> relu 25:18
+	  convolution_2d 26 -> add 27 -> relu 28	    0.473	    0.482	  0.689%	  8.773%	     0.000	        1	Delegate/convolution_2d 26 -> add 27 -> relu 28:19
+	            convolution_2d 29 -> relu 30	    0.554	    0.553	  0.791%	  9.564%	     0.000	        1	Delegate/convolution_2d 29 -> relu 30:20
+	            convolution_2d 32 -> relu 33	    0.886	    0.878	  1.255%	 10.819%	     0.000	        1	Delegate/convolution_2d 32 -> relu 33:21
+	                       convolution_2d 34	    0.293	    0.294	  0.420%	 11.239%	     0.000	        1	Delegate/convolution_2d 34:22
+	  convolution_2d 35 -> add 36 -> relu 37	    0.844	    0.847	  1.211%	 12.450%	     0.000	        1	Delegate/convolution_2d 35 -> add 36 -> relu 37:23
+	            convolution_2d 38 -> relu 39	    0.295	    0.296	  0.423%	 12.873%	     0.000	        1	Delegate/convolution_2d 38 -> relu 39:24
+	                   winograd_4x4_to_36 40	    0.082	    0.085	  0.122%	 12.995%	     0.000	        1	Delegate/winograd_4x4_to_36 40:25
+	         convolution_winograd_4x4_6x6 40	    0.296	    0.300	  0.429%	 13.424%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 40:26
+	        winograd_36_to_4x4 40 -> relu 41	    0.079	    0.080	  0.114%	 13.538%	     0.000	        1	Delegate/winograd_36_to_4x4 40 -> relu 41:27
+	  convolution_2d 42 -> add 43 -> relu 44	    0.349	    0.351	  0.502%	 14.039%	     0.000	        1	Delegate/convolution_2d 42 -> add 43 -> relu 44:28
+	            convolution_2d 45 -> relu 46	    0.296	    0.299	  0.428%	 14.467%	     0.000	        1	Delegate/convolution_2d 45 -> relu 46:29
+	                   winograd_4x4_to_36 47	    0.079	    0.082	  0.117%	 14.585%	     0.000	        1	Delegate/winograd_4x4_to_36 47:30
+	         convolution_winograd_4x4_6x6 47	    0.296	    0.298	  0.426%	 15.010%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 47:31
+	        winograd_36_to_4x4 47 -> relu 48	    0.078	    0.080	  0.114%	 15.124%	     0.000	        1	Delegate/winograd_36_to_4x4 47 -> relu 48:32
+	  convolution_2d 49 -> add 50 -> relu 51	    0.350	    0.350	  0.501%	 15.625%	     0.000	        1	Delegate/convolution_2d 49 -> add 50 -> relu 51:33
+	            convolution_2d 52 -> relu 53	    0.299	    0.299	  0.428%	 16.053%	     0.000	        1	Delegate/convolution_2d 52 -> relu 53:34
+	                   winograd_4x4_to_36 54	    0.081	    0.079	  0.113%	 16.166%	     0.000	        1	Delegate/winograd_4x4_to_36 54:35
+	         convolution_winograd_4x4_6x6 54	    0.299	    0.297	  0.425%	 16.591%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 54:36
+	        winograd_36_to_4x4 54 -> relu 55	    0.078	    0.078	  0.112%	 16.703%	     0.000	        1	Delegate/winograd_36_to_4x4 54 -> relu 55:37
+	  convolution_2d 56 -> add 57 -> relu 58	    0.350	    0.350	  0.500%	 17.203%	     0.000	        1	Delegate/convolution_2d 56 -> add 57 -> relu 58:38
+	            convolution_2d 59 -> relu 60	    0.560	    0.560	  0.800%	 18.004%	     0.000	        1	Delegate/convolution_2d 59 -> relu 60:39
+	            convolution_2d 62 -> relu 63	    0.990	    0.994	  1.421%	 19.424%	     0.000	        1	Delegate/convolution_2d 62 -> relu 63:40
+	                       convolution_2d 64	    0.278	    0.279	  0.398%	 19.823%	     0.000	        1	Delegate/convolution_2d 64:41
+	  convolution_2d 65 -> add 66 -> relu 67	    0.801	    0.805	  1.150%	 20.973%	     0.000	        1	Delegate/convolution_2d 65 -> add 66 -> relu 67:42
+	            convolution_2d 68 -> relu 69	    0.337	    0.338	  0.483%	 21.456%	     0.000	        1	Delegate/convolution_2d 68 -> relu 69:43
+	                   winograd_4x4_to_36 70	    0.046	    0.046	  0.065%	 21.521%	     0.000	        1	Delegate/winograd_4x4_to_36 70:44
+	         convolution_winograd_4x4_6x6 70	    0.323	    0.321	  0.458%	 21.979%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 70:45
+	        winograd_36_to_4x4 70 -> relu 71	    0.048	    0.047	  0.067%	 22.047%	     0.000	        1	Delegate/winograd_36_to_4x4 70 -> relu 71:46
+	  convolution_2d 72 -> add 73 -> relu 74	    0.310	    0.310	  0.443%	 22.489%	     0.000	        1	Delegate/convolution_2d 72 -> add 73 -> relu 74:47
+	            convolution_2d 75 -> relu 76	    0.340	    0.342	  0.488%	 22.978%	     0.000	        1	Delegate/convolution_2d 75 -> relu 76:48
+	                   winograd_4x4_to_36 77	    0.043	    0.043	  0.062%	 23.039%	     0.000	        1	Delegate/winograd_4x4_to_36 77:49
+	         convolution_winograd_4x4_6x6 77	    0.326	    0.323	  0.461%	 23.500%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 77:50
+	        winograd_36_to_4x4 77 -> relu 78	    0.045	    0.046	  0.066%	 23.566%	     0.000	        1	Delegate/winograd_36_to_4x4 77 -> relu 78:51
+	  convolution_2d 79 -> add 80 -> relu 81	    0.308	    0.309	  0.442%	 24.008%	     0.000	        1	Delegate/convolution_2d 79 -> add 80 -> relu 81:52
+	            convolution_2d 82 -> relu 83	    0.342	    0.342	  0.488%	 24.496%	     0.000	        1	Delegate/convolution_2d 82 -> relu 83:53
+	                   winograd_4x4_to_36 84	    0.043	    0.043	  0.062%	 24.558%	     0.000	        1	Delegate/winograd_4x4_to_36 84:54
+	         convolution_winograd_4x4_6x6 84	    0.319	    0.324	  0.463%	 25.021%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 84:55
+	        winograd_36_to_4x4 84 -> relu 85	    0.046	    0.045	  0.065%	 25.085%	     0.000	        1	Delegate/winograd_36_to_4x4 84 -> relu 85:56
+	  convolution_2d 86 -> add 87 -> relu 88	    0.309	    0.310	  0.444%	 25.529%	     0.000	        1	Delegate/convolution_2d 86 -> add 87 -> relu 88:57
+	            convolution_2d 89 -> relu 90	    0.341	    0.341	  0.487%	 26.016%	     0.000	        1	Delegate/convolution_2d 89 -> relu 90:58
+	                   winograd_4x4_to_36 91	    0.043	    0.044	  0.062%	 26.078%	     0.000	        1	Delegate/winograd_4x4_to_36 91:59
+	         convolution_winograd_4x4_6x6 91	    0.327	    0.325	  0.465%	 26.543%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 91:60
+	        winograd_36_to_4x4 91 -> relu 92	    0.046	    0.047	  0.067%	 26.610%	     0.000	        1	Delegate/winograd_36_to_4x4 91 -> relu 92:61
+	  convolution_2d 93 -> add 94 -> relu 95	    0.309	    0.310	  0.443%	 27.053%	     0.000	        1	Delegate/convolution_2d 93 -> add 94 -> relu 95:62
+	            convolution_2d 96 -> relu 97	    0.343	    0.343	  0.490%	 27.542%	     0.000	        1	Delegate/convolution_2d 96 -> relu 97:63
+	                   winograd_4x4_to_36 98	    0.043	    0.043	  0.062%	 27.604%	     0.000	        1	Delegate/winograd_4x4_to_36 98:64
+	         convolution_winograd_4x4_6x6 98	    0.328	    0.322	  0.460%	 28.064%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 98:65
+	        winograd_36_to_4x4 98 -> relu 99	    0.045	    0.046	  0.065%	 28.130%	     0.000	        1	Delegate/winograd_36_to_4x4 98 -> relu 99:66
+	convolution_2d 100 -> add 101 -> relu 102	    0.308	    0.310	  0.443%	 28.573%	     0.000	        1	Delegate/convolution_2d 100 -> add 101 -> relu 102:67
+	          convolution_2d 103 -> relu 104	    0.585	    0.585	  0.837%	 29.409%	     0.000	        1	Delegate/convolution_2d 103 -> relu 104:68
+	                  winograd_4x4_to_36 105	    0.088	    0.088	  0.126%	 29.536%	     0.000	        1	Delegate/winograd_4x4_to_36 105:69
+	        convolution_winograd_4x4_6x6 105	    1.145	    1.144	  1.635%	 31.171%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 105:70
+	      winograd_36_to_4x4 105 -> relu 106	    0.087	    0.087	  0.124%	 31.295%	     0.000	        1	Delegate/winograd_36_to_4x4 105 -> relu 106:71
+	                      convolution_2d 107	    1.063	    1.064	  1.521%	 32.816%	     0.000	        1	Delegate/convolution_2d 107:72
+	convolution_2d 108 -> add 109 -> relu 110	    2.152	    2.157	  3.082%	 35.898%	     0.000	        1	Delegate/convolution_2d 108 -> add 109 -> relu 110:73
+	          convolution_2d 111 -> relu 112	    1.151	    1.155	  1.651%	 37.549%	     0.000	        1	Delegate/convolution_2d 111 -> relu 112:74
+	          convolution_2d 113 -> relu 114	    3.508	    3.490	  4.987%	 42.536%	     0.000	        1	Delegate/convolution_2d 113 -> relu 114:75
+	convolution_2d 115 -> add 116 -> relu 117	    1.109	    1.111	  1.588%	 44.124%	     0.000	        1	Delegate/convolution_2d 115 -> add 116 -> relu 117:76
+	          convolution_2d 118 -> relu 119	    1.153	    1.151	  1.644%	 45.768%	     0.000	        1	Delegate/convolution_2d 118 -> relu 119:77
+	          convolution_2d 120 -> relu 121	    3.493	    3.487	  4.984%	 50.752%	     0.000	        1	Delegate/convolution_2d 120 -> relu 121:78
+	convolution_2d 122 -> add 123 -> relu 124	    1.110	    1.109	  1.585%	 52.337%	     0.000	        1	Delegate/convolution_2d 122 -> add 123 -> relu 124:79
+	          convolution_2d 125 -> relu 126	    0.675	    0.676	  0.965%	 53.302%	     0.000	        1	Delegate/convolution_2d 125 -> relu 126:80
+	                          reduce_sum 127	    0.000	    0.000	  0.000%	 53.302%	     0.000	        1	Delegate/reduce_sum 127:81
+	      fully_connected 131 -> sigmoid 132	    0.136	    0.136	  0.194%	 53.496%	     0.000	        1	Delegate/fully_connected 131 -> sigmoid 132:82
+	                                 mul 133	    0.014	    0.014	  0.020%	 53.516%	     0.000	        1	Delegate/mul 133:83
+	                          pooling_2d 134	    0.056	    0.058	  0.083%	 53.600%	     0.000	        1	Delegate/pooling_2d 134:84
+	                          pooling_2d 135	    0.008	    0.008	  0.011%	 53.611%	     0.000	        1	Delegate/pooling_2d 135:85
+	                          pooling_2d 136	    0.003	    0.004	  0.006%	 53.617%	     0.000	        1	Delegate/pooling_2d 136:86
+	                               slice 137	    0.008	    0.005	  0.008%	 53.625%	     0.000	        1	Delegate/slice 137:87
+	                               slice 138	    0.006	    0.007	  0.011%	 53.636%	     0.000	        1	Delegate/slice 138:88
+	                           transpose 139	    0.038	    0.037	  0.054%	 53.689%	     0.000	        1	Delegate/transpose 139:89
+	                              concat 140	    0.014	    0.014	  0.020%	 53.709%	     0.000	        1	Delegate/concat 140:90
+	                  winograd_4x4_to_36 141	    0.046	    0.046	  0.065%	 53.775%	     0.000	        1	Delegate/winograd_4x4_to_36 141:91
+	        convolution_winograd_4x4_6x6 141	    0.315	    0.318	  0.454%	 54.228%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 141:92
+	   winograd_36_to_4x4 141 -> sigmoid 142	    0.055	    0.056	  0.080%	 54.309%	     0.000	        1	Delegate/winograd_36_to_4x4 141 -> sigmoid 142:93
+	                    slice 143 -> mul 145	    0.012	    0.012	  0.017%	 54.326%	     0.000	        1	Delegate/slice 143 -> mul 145:94
+	                               slice 144	    0.002	    0.003	  0.004%	 54.330%	     0.000	        1	Delegate/slice 144:95
+	                              concat 146	    0.019	    0.019	  0.027%	 54.357%	     0.000	        1	Delegate/concat 146:96
+	                  winograd_4x4_to_36 147	    0.030	    0.031	  0.044%	 54.401%	     0.000	        1	Delegate/winograd_4x4_to_36 147:97
+	        convolution_winograd_4x4_6x6 147	    0.152	    0.154	  0.220%	 54.621%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 147:98
+	winograd_36_to_4x4 147 -> tanh 148 -> mul 151	    0.064	    0.065	  0.093%	 54.714%	     0.000	        1	Delegate/winograd_36_to_4x4 147 -> tanh 148 -> mul 151:99
+	                 subtract 149 -> mul 150	    0.000	    0.000	  0.000%	 54.714%	     0.000	        1	Delegate/subtract 149 -> mul 150:100
+	                                 add 152	    0.006	    0.006	  0.009%	 54.723%	     0.000	        1	Delegate/add 152:101
+	                              concat 153	    0.016	    0.017	  0.024%	 54.747%	     0.000	        1	Delegate/concat 153:102
+	                              resize 154	    0.051	    0.050	  0.071%	 54.818%	     0.000	        1	Delegate/resize 154:103
+	                              concat 155	    0.284	    0.287	  0.411%	 55.229%	     0.000	        1	Delegate/concat 155:104
+	                  winograd_4x4_to_36 156	    0.472	    0.470	  0.671%	 55.900%	     0.000	        1	Delegate/winograd_4x4_to_36 156:105
+	        convolution_winograd_4x4_6x6 156	    1.622	    1.621	  2.317%	 58.217%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 156:106
+	      winograd_36_to_4x4 156 -> relu 157	    0.080	    0.080	  0.114%	 58.331%	     0.000	        1	Delegate/winograd_36_to_4x4 156 -> relu 157:107
+	                               slice 158	    0.007	    0.007	  0.010%	 58.341%	     0.000	        1	Delegate/slice 158:108
+	                           transpose 159	    0.064	    0.065	  0.093%	 58.434%	     0.000	        1	Delegate/transpose 159:109
+	                              concat 160	    0.042	    0.043	  0.061%	 58.495%	     0.000	        1	Delegate/concat 160:110
+	                  winograd_4x4_to_36 161	    0.069	    0.071	  0.102%	 58.597%	     0.000	        1	Delegate/winograd_4x4_to_36 161:111
+	        convolution_winograd_4x4_6x6 161	    0.296	    0.296	  0.423%	 59.020%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 161:112
+	   winograd_36_to_4x4 161 -> sigmoid 162	    0.087	    0.089	  0.127%	 59.147%	     0.000	        1	Delegate/winograd_36_to_4x4 161 -> sigmoid 162:113
+	                    slice 163 -> mul 165	    0.034	    0.035	  0.050%	 59.197%	     0.000	        1	Delegate/slice 163 -> mul 165:114
+	                               slice 164	    0.014	    0.013	  0.019%	 59.216%	     0.000	        1	Delegate/slice 164:115
+	                              concat 166	    0.041	    0.041	  0.059%	 59.275%	     0.000	        1	Delegate/concat 166:116
+	                  winograd_4x4_to_36 167	    0.071	    0.072	  0.103%	 59.379%	     0.000	        1	Delegate/winograd_4x4_to_36 167:117
+	        convolution_winograd_4x4_6x6 167	    0.149	    0.148	  0.211%	 59.590%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 167:118
+	winograd_36_to_4x4 167 -> tanh 168 -> mul 171	    0.112	    0.112	  0.160%	 59.750%	     0.000	        1	Delegate/winograd_36_to_4x4 167 -> tanh 168 -> mul 171:119
+	                 subtract 169 -> mul 170	    0.000	    0.000	  0.000%	 59.750%	     0.000	        1	Delegate/subtract 169 -> mul 170:120
+	                                 add 172	    0.022	    0.022	  0.032%	 59.782%	     0.000	        1	Delegate/add 172:121
+	                               slice 173	    0.020	    0.020	  0.028%	 59.811%	     0.000	        1	Delegate/slice 173:122
+	                              concat 174	    0.032	    0.029	  0.042%	 59.853%	     0.000	        1	Delegate/concat 174:123
+	                              resize 175	    0.112	    0.113	  0.162%	 60.014%	     0.000	        1	Delegate/resize 175:124
+	                              concat 176	    0.555	    0.559	  0.799%	 60.813%	     0.000	        1	Delegate/concat 176:125
+	                  winograd_4x4_to_36 177	    0.911	    0.920	  1.315%	 62.128%	     0.000	        1	Delegate/winograd_4x4_to_36 177:126
+	        convolution_winograd_4x4_6x6 177	    1.219	    1.220	  1.743%	 63.871%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 177:127
+	      winograd_36_to_4x4 177 -> relu 178	    0.147	    0.147	  0.210%	 64.081%	     0.000	        1	Delegate/winograd_36_to_4x4 177 -> relu 178:128
+	                               slice 179	    0.033	    0.035	  0.049%	 64.130%	     0.000	        1	Delegate/slice 179:129
+	                           transpose 180	    0.149	    0.147	  0.209%	 64.340%	     0.000	        1	Delegate/transpose 180:130
+	                              concat 181	    0.087	    0.088	  0.126%	 64.466%	     0.000	        1	Delegate/concat 181:131
+	                  winograd_4x4_to_36 182	    0.150	    0.149	  0.214%	 64.679%	     0.000	        1	Delegate/winograd_4x4_to_36 182:132
+	        convolution_winograd_4x4_6x6 182	    0.251	    0.253	  0.362%	 65.041%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 182:133
+	   winograd_36_to_4x4 182 -> sigmoid 183	    0.165	    0.167	  0.239%	 65.280%	     0.000	        1	Delegate/winograd_36_to_4x4 182 -> sigmoid 183:134
+	                    slice 184 -> mul 186	    0.058	    0.059	  0.084%	 65.364%	     0.000	        1	Delegate/slice 184 -> mul 186:135
+	                               slice 185	    0.035	    0.036	  0.052%	 65.416%	     0.000	        1	Delegate/slice 185:136
+	                              concat 187	    0.091	    0.092	  0.131%	 65.547%	     0.000	        1	Delegate/concat 187:137
+	                  winograd_4x4_to_36 188	    0.161	    0.164	  0.234%	 65.781%	     0.000	        1	Delegate/winograd_4x4_to_36 188:138
+	        convolution_winograd_4x4_6x6 188	    0.182	    0.182	  0.260%	 66.040%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 188:139
+	winograd_36_to_4x4 188 -> tanh 189 -> mul 192	    0.190	    0.182	  0.261%	 66.301%	     0.000	        1	Delegate/winograd_36_to_4x4 188 -> tanh 189 -> mul 192:140
+	                 subtract 190 -> mul 191	    0.000	    0.007	  0.010%	 66.311%	     0.000	        1	Delegate/subtract 190 -> mul 191:141
+	                                 add 193	    0.061	    0.062	  0.088%	 66.399%	     0.000	        1	Delegate/add 193:142
+	                               slice 194	    0.038	    0.039	  0.055%	 66.455%	     0.000	        1	Delegate/slice 194:143
+	                              concat 195	    0.079	    0.080	  0.114%	 66.569%	     0.000	        1	Delegate/concat 195:144
+	                              resize 196	    0.215	    0.223	  0.319%	 66.887%	     0.000	        1	Delegate/resize 196:145
+	                              concat 197	    0.729	    0.733	  1.047%	 67.934%	     0.000	        1	Delegate/concat 197:146
+	                  winograd_4x4_to_36 198	    1.273	    1.274	  1.820%	 69.754%	     0.000	        1	Delegate/winograd_4x4_to_36 198:147
+	        convolution_winograd_4x4_6x6 198	    0.998	    1.004	  1.434%	 71.188%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 198:148
+	      winograd_36_to_4x4 198 -> relu 199	    0.278	    0.280	  0.400%	 71.588%	     0.000	        1	Delegate/winograd_36_to_4x4 198 -> relu 199:149
+	                               slice 200	    0.090	    0.083	  0.119%	 71.707%	     0.000	        1	Delegate/slice 200:150
+	                           transpose 201	    0.273	    0.280	  0.400%	 72.107%	     0.000	        1	Delegate/transpose 201:151
+	                              concat 202	    0.185	    0.187	  0.268%	 72.375%	     0.000	        1	Delegate/concat 202:152
+	       convolution_2d 203 -> sigmoid 204	    0.679	    0.682	  0.975%	 73.350%	     0.000	        1	Delegate/convolution_2d 203 -> sigmoid 204:153
+	                    slice 205 -> mul 207	    0.127	    0.131	  0.187%	 73.537%	     0.000	        1	Delegate/slice 205 -> mul 207:154
+	                               slice 206	    0.078	    0.076	  0.108%	 73.645%	     0.000	        1	Delegate/slice 206:155
+	                              concat 208	    0.182	    0.182	  0.261%	 73.906%	     0.000	        1	Delegate/concat 208:156
+	convolution_2d 209 -> tanh 210 -> mul 213	    0.614	    0.615	  0.879%	 74.784%	     0.000	        1	Delegate/convolution_2d 209 -> tanh 210 -> mul 213:157
+	                 subtract 211 -> mul 212	    0.000	    0.000	  0.000%	 74.784%	     0.000	        1	Delegate/subtract 211 -> mul 212:158
+	                                 add 214	    0.122	    0.123	  0.176%	 74.961%	     0.000	        1	Delegate/add 214:159
+	                               slice 215	    0.084	    0.085	  0.121%	 75.081%	     0.000	        1	Delegate/slice 215:160
+	                              concat 216	    0.184	    0.185	  0.265%	 75.346%	     0.000	        1	Delegate/concat 216:161
+	                              resize 217	    0.453	    0.455	  0.651%	 75.997%	     0.000	        1	Delegate/resize 217:162
+	                              concat 218	    0.782	    0.786	  1.123%	 77.120%	     0.000	        1	Delegate/concat 218:163
+	          convolution_2d 219 -> relu 220	    1.655	    1.646	  2.352%	 79.472%	     0.000	        1	Delegate/convolution_2d 219 -> relu 220:164
+	          convolution_2d 221 -> relu 222	    0.695	    0.690	  0.986%	 80.458%	     0.000	        1	Delegate/convolution_2d 221 -> relu 222:165
+	                      convolution_2d 223	    0.244	    0.239	  0.341%	 80.799%	     0.000	        1	Delegate/convolution_2d 223:166
+	                          reduce_sum 224	    0.526	    0.527	  0.754%	 81.552%	     0.000	        1	Delegate/reduce_sum 224:167
+	                  reshape 225 -> mul 226	    1.394	    1.405	  2.008%	 83.560%	     0.000	        1	Delegate/reshape 225 -> mul 226:168
+	                             reshape 227	    0.444	    0.450	  0.643%	 84.203%	     0.000	        1	Delegate/reshape 227:169
+	                              concat 228	    0.780	    0.781	  1.116%	 85.319%	     0.000	        1	Delegate/concat 228:170
+	                          reduce_sum 229	    0.073	    0.076	  0.109%	 85.428%	     0.000	        1	Delegate/reduce_sum 229:171
+	                  reshape 230 -> mul 231	    0.198	    0.199	  0.284%	 85.712%	     0.000	        1	Delegate/reshape 230 -> mul 231:172
+	                             reshape 232	    0.067	    0.067	  0.096%	 85.807%	     0.000	        1	Delegate/reshape 232:173
+	                              concat 233	    0.133	    0.134	  0.192%	 85.999%	     0.000	        1	Delegate/concat 233:174
+	               depthwise_convolution 234	    0.088	    0.088	  0.125%	 86.125%	     0.000	        1	Delegate/depthwise_convolution 234:175
+	               depthwise_convolution 235	    0.099	    0.099	  0.141%	 86.266%	     0.000	        1	Delegate/depthwise_convolution 235:176
+	                                 mul 236	    0.110	    0.113	  0.161%	 86.427%	     0.000	        1	Delegate/mul 236:177
+	               depthwise_convolution 237	    0.087	    0.088	  0.126%	 86.553%	     0.000	        1	Delegate/depthwise_convolution 237:178
+	                                 mul 238	    0.126	    0.128	  0.182%	 86.735%	     0.000	        1	Delegate/mul 238:179
+	                            subtract 239	    0.125	    0.126	  0.180%	 86.915%	     0.000	        1	Delegate/subtract 239:180
+	                              square 240	    0.082	    0.084	  0.119%	 87.034%	     0.000	        1	Delegate/square 240:181
+	               depthwise_convolution 241	    0.087	    0.087	  0.125%	 87.159%	     0.000	        1	Delegate/depthwise_convolution 241:182
+	                              square 242	    0.086	    0.086	  0.123%	 87.282%	     0.000	        1	Delegate/square 242:183
+	                            subtract 243	    0.125	    0.126	  0.180%	 87.462%	     0.000	        1	Delegate/subtract 243:184
+	                              concat 244	    0.522	    0.522	  0.746%	 88.208%	     0.000	        1	Delegate/concat 244:185
+	          convolution_2d 245 -> relu 246	    0.436	    0.434	  0.620%	 88.828%	     0.000	        1	Delegate/convolution_2d 245 -> relu 246:186
+	          convolution_2d 247 -> relu 248	    0.331	    0.329	  0.470%	 89.298%	     0.000	        1	Delegate/convolution_2d 247 -> relu 248:187
+	                      convolution_2d 249	    0.236	    0.237	  0.339%	 89.636%	     0.000	        1	Delegate/convolution_2d 249:188
+	                                 mul 250	    0.129	    0.130	  0.186%	 89.822%	     0.000	        1	Delegate/mul 250:189
+	                            subtract 251	    0.126	    0.124	  0.178%	 90.000%	     0.000	        1	Delegate/subtract 251:190
+	                   resize 252 -> mul 254	    0.566	    0.565	  0.807%	 90.806%	     0.000	        1	Delegate/resize 252 -> mul 254:191
+	                              resize 253	    0.324	    0.318	  0.455%	 91.261%	     0.000	        1	Delegate/resize 253:192
+	                                 add 255	    0.780	    0.775	  1.107%	 92.369%	     0.000	        1	Delegate/add 255:193
+	slice 256 -> add 258 -> relu 259 -> subtract 260 -> relu 261 -> subtract 262 -> mul 267	    0.765	    0.762	  1.089%	 93.458%	     0.000	        1	Delegate/slice 256 -> add 258 -> relu 259 -> subtract 260 -> relu 261 -> subtract 262 -> mul 267:194
+	                               slice 257	    1.442	    1.446	  2.066%	 95.524%	     0.000	        1	Delegate/slice 257:195
+	                                relu 263	    0.553	    0.544	  0.777%	 96.301%	     0.000	        1	Delegate/relu 263:196
+	                subtract 264 -> relu 265	    0.532	    0.534	  0.763%	 97.065%	     0.000	        1	Delegate/subtract 264 -> relu 265:197
+	                            subtract 266	    0.782	    0.767	  1.097%	 98.161%	     0.000	        1	Delegate/subtract 266:198
+	                           transpose 268	    0.775	    0.778	  1.112%	 99.273%	     0.000	        1	Delegate/transpose 268:199
+	                           transpose 269	    0.379	    0.379	  0.542%	 99.815%	     0.000	        1	Delegate/transpose 269:200
+	                           transpose 270	    0.088	    0.089	  0.127%	 99.942%	     0.000	        1	Delegate/transpose 270:201
+	                           transpose 271	    0.041	    0.041	  0.058%	100.000%	     0.000	        1	Delegate/transpose 271:202
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	          convolution_2d 113 -> relu 114	    3.508	    3.490	  4.987%	  4.987%	     0.000	        1	Delegate/convolution_2d 113 -> relu 114:75
+	          convolution_2d 120 -> relu 121	    3.493	    3.487	  4.984%	  9.971%	     0.000	        1	Delegate/convolution_2d 120 -> relu 121:78
+	convolution_2d 108 -> add 109 -> relu 110	    2.152	    2.157	  3.082%	 13.054%	     0.000	        1	Delegate/convolution_2d 108 -> add 109 -> relu 110:73
+	          convolution_2d 219 -> relu 220	    1.655	    1.646	  2.352%	 15.406%	     0.000	        1	Delegate/convolution_2d 219 -> relu 220:164
+	        convolution_winograd_4x4_6x6 156	    1.622	    1.621	  2.317%	 17.723%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 156:106
+	                               slice 257	    1.442	    1.446	  2.066%	 19.788%	     0.000	        1	Delegate/slice 257:195
+	                  reshape 225 -> mul 226	    1.394	    1.405	  2.008%	 21.796%	     0.000	        1	Delegate/reshape 225 -> mul 226:168
+	                  winograd_4x4_to_36 198	    1.273	    1.274	  1.820%	 23.616%	     0.000	        1	Delegate/winograd_4x4_to_36 198:147
+	        convolution_winograd_4x4_6x6 177	    1.219	    1.220	  1.743%	 25.359%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 177:127
+	          convolution_2d 111 -> relu 112	    1.151	    1.155	  1.651%	 27.009%	     0.000	        1	Delegate/convolution_2d 111 -> relu 112:74
+
+Number of nodes executed: 203
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	          convolution_2d 113 -> relu 114	        1	     3.490	     4.993%	     4.993%	     0.000	        1
+	          convolution_2d 120 -> relu 121	        1	     3.487	     4.989%	     9.982%	     0.000	        1
+	convolution_2d 108 -> add 109 -> relu 110	        1	     2.157	     3.086%	    13.069%	     0.000	        1
+	          convolution_2d 219 -> relu 220	        1	     1.646	     2.355%	    15.424%	     0.000	        1
+	        convolution_winograd_4x4_6x6 156	        1	     1.621	     2.319%	    17.743%	     0.000	        1
+	                               slice 257	        1	     1.445	     2.067%	    19.810%	     0.000	        1
+	                  reshape 225 -> mul 226	        1	     1.404	     2.009%	    21.819%	     0.000	        1
+	                  winograd_4x4_to_36 198	        1	     1.273	     1.821%	    23.640%	     0.000	        1
+	        convolution_winograd_4x4_6x6 177	        1	     1.219	     1.744%	    25.385%	     0.000	        1
+	          convolution_2d 111 -> relu 112	        1	     1.155	     1.653%	    27.037%	     0.000	        1
+	          convolution_2d 118 -> relu 119	        1	     1.150	     1.645%	    28.682%	     0.000	        1
+	        convolution_winograd_4x4_6x6 105	        1	     1.144	     1.637%	    30.319%	     0.000	        1
+	convolution_2d 115 -> add 116 -> relu 117	        1	     1.111	     1.590%	    31.909%	     0.000	        1
+	convolution_2d 122 -> add 123 -> relu 124	        1	     1.109	     1.587%	    33.495%	     0.000	        1
+	                      convolution_2d 107	        1	     1.064	     1.522%	    35.018%	     0.000	        1
+	        convolution_winograd_4x4_6x6 198	        1	     1.003	     1.435%	    36.453%	     0.000	        1
+	            convolution_2d 62 -> relu 63	        1	     0.994	     1.422%	    37.875%	     0.000	        1
+	                  winograd_4x4_to_36 177	        1	     0.919	     1.315%	    39.190%	     0.000	        1
+	              convolution_2d 3 -> relu 4	        1	     0.906	     1.296%	    40.486%	     0.000	        1
+	            convolution_2d 32 -> relu 33	        1	     0.878	     1.256%	    41.742%	     0.000	        1
+	  convolution_2d 35 -> add 36 -> relu 37	        1	     0.847	     1.212%	    42.954%	     0.000	        1
+	  convolution_2d 65 -> add 66 -> relu 67	        1	     0.805	     1.152%	    44.106%	     0.000	        1
+	                              concat 218	        1	     0.785	     1.123%	    45.229%	     0.000	        1
+	                              concat 228	        1	     0.780	     1.116%	    46.345%	     0.000	        1
+	                           transpose 268	        1	     0.778	     1.113%	    47.458%	     0.000	        1
+	                                 add 255	        1	     0.775	     1.109%	    48.567%	     0.000	        1
+	                            subtract 266	        1	     0.767	     1.097%	    49.664%	     0.000	        1
+	slice 256 -> add 258 -> relu 259 -> subtract 260 -> relu 261 -> subtract 262 -> mul 267	        1	     0.762	     1.090%	    50.755%	     0.000	        1
+	                              concat 197	        1	     0.732	     1.047%	    51.802%	     0.000	        1
+	          convolution_2d 221 -> relu 222	        1	     0.690	     0.987%	    52.789%	     0.000	        1
+	       convolution_2d 203 -> sigmoid 204	        1	     0.682	     0.976%	    53.765%	     0.000	        1
+	          convolution_2d 125 -> relu 126	        1	     0.675	     0.966%	    54.731%	     0.000	        1
+	convolution_2d 209 -> tanh 210 -> mul 213	        1	     0.615	     0.880%	    55.611%	     0.000	        1
+	          convolution_2d 103 -> relu 104	        1	     0.585	     0.837%	    56.448%	     0.000	        1
+	                   resize 252 -> mul 254	        1	     0.564	     0.807%	    57.255%	     0.000	        1
+	            convolution_2d 59 -> relu 60	        1	     0.560	     0.801%	    58.056%	     0.000	        1
+	                              concat 176	        1	     0.559	     0.800%	    58.856%	     0.000	        1
+	            convolution_2d 29 -> relu 30	        1	     0.553	     0.791%	    59.647%	     0.000	        1
+	                                   mul 0	        1	     0.547	     0.783%	    60.430%	     0.000	        1
+	                                relu 263	        1	     0.543	     0.777%	    61.206%	     0.000	        1
+	                subtract 264 -> relu 265	        1	     0.534	     0.764%	    61.970%	     0.000	        1
+	                          reduce_sum 224	        1	     0.527	     0.754%	    62.724%	     0.000	        1
+	                              concat 244	        1	     0.522	     0.747%	    63.471%	     0.000	        1
+	  convolution_2d 12 -> add 13 -> relu 14	        1	     0.495	     0.708%	    64.180%	     0.000	        1
+	  convolution_2d 19 -> add 20 -> relu 21	        1	     0.483	     0.691%	    64.871%	     0.000	        1
+	  convolution_2d 26 -> add 27 -> relu 28	        1	     0.481	     0.688%	    65.559%	     0.000	        1
+	                  winograd_4x4_to_36 156	        1	     0.469	     0.671%	    66.230%	     0.000	        1
+	                              resize 217	        1	     0.455	     0.651%	    66.881%	     0.000	        1
+	                             reshape 227	        1	     0.449	     0.642%	    67.523%	     0.000	        1
+	          convolution_2d 245 -> relu 246	        1	     0.433	     0.620%	    68.143%	     0.000	        1
+	                           transpose 269	        1	     0.379	     0.542%	    68.685%	     0.000	        1
+	  convolution_2d 42 -> add 43 -> relu 44	        1	     0.351	     0.502%	    69.187%	     0.000	        1
+	  convolution_2d 49 -> add 50 -> relu 51	        1	     0.350	     0.501%	    69.688%	     0.000	        1
+	  convolution_2d 56 -> add 57 -> relu 58	        1	     0.349	     0.499%	    70.187%	     0.000	        1
+	            convolution_2d 96 -> relu 97	        1	     0.342	     0.489%	    70.677%	     0.000	        1
+	            convolution_2d 82 -> relu 83	        1	     0.341	     0.488%	    71.165%	     0.000	        1
+	            convolution_2d 75 -> relu 76	        1	     0.341	     0.488%	    71.652%	     0.000	        1
+	            convolution_2d 89 -> relu 90	        1	     0.340	     0.486%	    72.139%	     0.000	        1
+	            convolution_2d 68 -> relu 69	        1	     0.338	     0.484%	    72.622%	     0.000	        1
+	          convolution_2d 247 -> relu 248	        1	     0.328	     0.469%	    73.092%	     0.000	        1
+	         convolution_winograd_4x4_6x6 91	        1	     0.325	     0.465%	    73.557%	     0.000	        1
+	         convolution_winograd_4x4_6x6 84	        1	     0.323	     0.462%	    74.019%	     0.000	        1
+	         convolution_winograd_4x4_6x6 98	        1	     0.322	     0.461%	    74.480%	     0.000	        1
+	         convolution_winograd_4x4_6x6 77	        1	     0.322	     0.461%	    74.940%	     0.000	        1
+	         convolution_winograd_4x4_6x6 70	        1	     0.320	     0.458%	    75.398%	     0.000	        1
+	                       convolution_2d 11	        1	     0.320	     0.458%	    75.856%	     0.000	        1
+	                              resize 253	        1	     0.318	     0.455%	    76.311%	     0.000	        1
+	        convolution_winograd_4x4_6x6 141	        1	     0.317	     0.454%	    76.764%	     0.000	        1
+	  convolution_2d 86 -> add 87 -> relu 88	        1	     0.310	     0.444%	    77.208%	     0.000	        1
+	convolution_2d 100 -> add 101 -> relu 102	        1	     0.310	     0.444%	    77.652%	     0.000	        1
+	  convolution_2d 93 -> add 94 -> relu 95	        1	     0.309	     0.442%	    78.094%	     0.000	        1
+	  convolution_2d 79 -> add 80 -> relu 81	        1	     0.309	     0.442%	    78.536%	     0.000	        1
+	  convolution_2d 72 -> add 73 -> relu 74	        1	     0.309	     0.442%	    78.978%	     0.000	        1
+	            convolution_2d 22 -> relu 23	        1	     0.302	     0.432%	    79.410%	     0.000	        1
+	         convolution_winograd_4x4_6x6 40	        1	     0.300	     0.429%	    79.839%	     0.000	        1
+	            convolution_2d 15 -> relu 16	        1	     0.300	     0.429%	    80.268%	     0.000	        1
+	            convolution_2d 52 -> relu 53	        1	     0.299	     0.428%	    80.696%	     0.000	        1
+	            convolution_2d 45 -> relu 46	        1	     0.299	     0.428%	    81.124%	     0.000	        1
+	         convolution_winograd_4x4_6x6 54	        1	     0.297	     0.425%	    81.549%	     0.000	        1
+	         convolution_winograd_4x4_6x6 47	        1	     0.297	     0.425%	    81.974%	     0.000	        1
+	            convolution_2d 38 -> relu 39	        1	     0.296	     0.424%	    82.397%	     0.000	        1
+	        convolution_winograd_4x4_6x6 161	        1	     0.295	     0.422%	    82.819%	     0.000	        1
+	                       convolution_2d 34	        1	     0.294	     0.421%	    83.240%	     0.000	        1
+	                              concat 155	        1	     0.287	     0.411%	    83.651%	     0.000	        1
+	      winograd_36_to_4x4 198 -> relu 199	        1	     0.280	     0.401%	    84.051%	     0.000	        1
+	                           transpose 201	        1	     0.279	     0.399%	    84.451%	     0.000	        1
+	                       convolution_2d 64	        1	     0.278	     0.398%	    84.848%	     0.000	        1
+	         convolution_winograd_4x4_6x6 17	        1	     0.265	     0.379%	    85.227%	     0.000	        1
+	                                resize 1	        1	     0.262	     0.375%	    85.602%	     0.000	        1
+	          convolution_winograd_4x4_6x6 9	        1	     0.260	     0.372%	    85.974%	     0.000	        1
+	         convolution_winograd_4x4_6x6 24	        1	     0.258	     0.369%	    86.343%	     0.000	        1
+	        convolution_winograd_4x4_6x6 182	        1	     0.253	     0.362%	    86.705%	     0.000	        1
+	                      convolution_2d 223	        1	     0.238	     0.341%	    87.046%	     0.000	        1
+	                      convolution_2d 249	        1	     0.237	     0.339%	    87.385%	     0.000	        1
+	                            pooling_2d 6	        1	     0.231	     0.331%	    87.716%	     0.000	        1
+	                              resize 196	        1	     0.223	     0.319%	    88.035%	     0.000	        1
+	                  reshape 230 -> mul 231	        1	     0.198	     0.283%	    88.318%	     0.000	        1
+	                              concat 202	        1	     0.187	     0.268%	    88.585%	     0.000	        1
+	                              concat 216	        1	     0.185	     0.265%	    88.850%	     0.000	        1
+	winograd_36_to_4x4 188 -> tanh 189 -> mul 192	        1	     0.182	     0.260%	    89.111%	     0.000	        1
+	                              concat 208	        1	     0.182	     0.260%	    89.371%	     0.000	        1
+	        convolution_winograd_4x4_6x6 188	        1	     0.181	     0.259%	    89.630%	     0.000	        1
+	   winograd_36_to_4x4 182 -> sigmoid 183	        1	     0.167	     0.239%	    89.869%	     0.000	        1
+	                  winograd_4x4_to_36 188	        1	     0.163	     0.233%	    90.102%	     0.000	        1
+	                    winograd_4x4_to_36 9	        1	     0.158	     0.226%	    90.328%	     0.000	        1
+	                   winograd_4x4_to_36 24	        1	     0.156	     0.223%	    90.551%	     0.000	        1
+	                   winograd_4x4_to_36 17	        1	     0.154	     0.220%	    90.772%	     0.000	        1
+	        winograd_36_to_4x4 17 -> relu 18	        1	     0.154	     0.220%	    90.992%	     0.000	        1
+	        convolution_winograd_4x4_6x6 147	        1	     0.154	     0.220%	    91.212%	     0.000	        1
+	         winograd_36_to_4x4 9 -> relu 10	        1	     0.151	     0.216%	    91.428%	     0.000	        1
+	                  winograd_4x4_to_36 182	        1	     0.149	     0.213%	    91.642%	     0.000	        1
+	        convolution_winograd_4x4_6x6 167	        1	     0.148	     0.212%	    91.853%	     0.000	        1
+	        winograd_36_to_4x4 24 -> relu 25	        1	     0.147	     0.210%	    92.064%	     0.000	        1
+	      winograd_36_to_4x4 177 -> relu 178	        1	     0.147	     0.210%	    92.274%	     0.000	        1
+	                           transpose 180	        1	     0.146	     0.209%	    92.483%	     0.000	        1
+	      fully_connected 131 -> sigmoid 132	        1	     0.135	     0.193%	    92.676%	     0.000	        1
+	                              concat 233	        1	     0.134	     0.192%	    92.868%	     0.000	        1
+	                    slice 205 -> mul 207	        1	     0.130	     0.186%	    93.054%	     0.000	        1
+	                                 mul 250	        1	     0.129	     0.185%	    93.238%	     0.000	        1
+	                                 mul 238	        1	     0.127	     0.182%	    93.420%	     0.000	        1
+	                            subtract 239	        1	     0.126	     0.180%	    93.600%	     0.000	        1
+	                            subtract 243	        1	     0.125	     0.179%	    93.779%	     0.000	        1
+	                            subtract 251	        1	     0.124	     0.177%	    93.956%	     0.000	        1
+	                                 add 214	        1	     0.123	     0.176%	    94.132%	     0.000	        1
+	                              resize 175	        1	     0.113	     0.162%	    94.294%	     0.000	        1
+	                                 mul 236	        1	     0.112	     0.160%	    94.454%	     0.000	        1
+	winograd_36_to_4x4 167 -> tanh 168 -> mul 171	        1	     0.111	     0.159%	    94.613%	     0.000	        1
+	               depthwise_convolution 235	        1	     0.098	     0.140%	    94.753%	     0.000	        1
+	              convolution_2d 7 -> relu 8	        1	     0.098	     0.140%	    94.894%	     0.000	        1
+	                              concat 187	        1	     0.092	     0.132%	    95.025%	     0.000	        1
+	   winograd_36_to_4x4 161 -> sigmoid 162	        1	     0.089	     0.127%	    95.153%	     0.000	        1
+	                  winograd_4x4_to_36 105	        1	     0.088	     0.126%	    95.279%	     0.000	        1
+	                           transpose 270	        1	     0.088	     0.126%	    95.404%	     0.000	        1
+	               depthwise_convolution 237	        1	     0.088	     0.126%	    95.530%	     0.000	        1
+	                              concat 181	        1	     0.088	     0.126%	    95.656%	     0.000	        1
+	               depthwise_convolution 241	        1	     0.087	     0.124%	    95.781%	     0.000	        1
+	               depthwise_convolution 234	        1	     0.087	     0.124%	    95.905%	     0.000	        1
+	      winograd_36_to_4x4 105 -> relu 106	        1	     0.086	     0.123%	    96.028%	     0.000	        1
+	                   winograd_4x4_to_36 40	        1	     0.085	     0.122%	    96.150%	     0.000	        1
+	                              square 242	        1	     0.085	     0.122%	    96.271%	     0.000	        1
+	                               slice 215	        1	     0.084	     0.120%	    96.392%	     0.000	        1
+	                              square 240	        1	     0.083	     0.119%	    96.510%	     0.000	        1
+	                               slice 200	        1	     0.083	     0.119%	    96.629%	     0.000	        1
+	                   winograd_4x4_to_36 47	        1	     0.082	     0.117%	    96.746%	     0.000	        1
+	        winograd_36_to_4x4 40 -> relu 41	        1	     0.080	     0.114%	    96.861%	     0.000	        1
+	                   winograd_4x4_to_36 54	        1	     0.079	     0.113%	    96.974%	     0.000	        1
+	        winograd_36_to_4x4 47 -> relu 48	        1	     0.079	     0.113%	    97.087%	     0.000	        1
+	      winograd_36_to_4x4 156 -> relu 157	        1	     0.079	     0.113%	    97.200%	     0.000	        1
+	                              concat 195	        1	     0.079	     0.113%	    97.313%	     0.000	        1
+	        winograd_36_to_4x4 54 -> relu 55	        1	     0.078	     0.112%	    97.425%	     0.000	        1
+	                          reduce_sum 229	        1	     0.076	     0.109%	    97.533%	     0.000	        1
+	                               slice 206	        1	     0.075	     0.107%	    97.641%	     0.000	        1
+	                  winograd_4x4_to_36 167	        1	     0.072	     0.103%	    97.744%	     0.000	        1
+	                  winograd_4x4_to_36 161	        1	     0.071	     0.102%	    97.845%	     0.000	        1
+	                             reshape 232	        1	     0.066	     0.094%	    97.940%	     0.000	        1
+	winograd_36_to_4x4 147 -> tanh 148 -> mul 151	        1	     0.065	     0.093%	    98.033%	     0.000	        1
+	                           transpose 159	        1	     0.065	     0.093%	    98.126%	     0.000	        1
+	                                 add 193	        1	     0.061	     0.087%	    98.213%	     0.000	        1
+	                    slice 184 -> mul 186	        1	     0.058	     0.083%	    98.296%	     0.000	        1
+	                          pooling_2d 134	        1	     0.058	     0.083%	    98.379%	     0.000	        1
+	   winograd_36_to_4x4 141 -> sigmoid 142	        1	     0.056	     0.080%	    98.459%	     0.000	        1
+	                              resize 154	        1	     0.049	     0.070%	    98.529%	     0.000	        1
+	        winograd_36_to_4x4 70 -> relu 71	        1	     0.047	     0.067%	    98.596%	     0.000	        1
+	        winograd_36_to_4x4 91 -> relu 92	        1	     0.046	     0.066%	    98.662%	     0.000	        1
+	        winograd_36_to_4x4 77 -> relu 78	        1	     0.046	     0.066%	    98.728%	     0.000	        1
+	                   winograd_4x4_to_36 70	        1	     0.045	     0.064%	    98.792%	     0.000	        1
+	                  winograd_4x4_to_36 141	        1	     0.045	     0.064%	    98.857%	     0.000	        1
+	        winograd_36_to_4x4 98 -> relu 99	        1	     0.045	     0.064%	    98.921%	     0.000	        1
+	        winograd_36_to_4x4 84 -> relu 85	        1	     0.045	     0.064%	    98.986%	     0.000	        1
+	                   winograd_4x4_to_36 98	        1	     0.043	     0.062%	    99.047%	     0.000	        1
+	                   winograd_4x4_to_36 91	        1	     0.043	     0.062%	    99.109%	     0.000	        1
+	                   winograd_4x4_to_36 84	        1	     0.043	     0.062%	    99.170%	     0.000	        1
+	                   winograd_4x4_to_36 77	        1	     0.043	     0.062%	    99.232%	     0.000	        1
+	                              concat 160	        1	     0.042	     0.060%	    99.292%	     0.000	        1
+	                              concat 166	        1	     0.041	     0.059%	    99.350%	     0.000	        1
+	                           transpose 271	        1	     0.040	     0.057%	    99.408%	     0.000	        1
+	                               slice 194	        1	     0.038	     0.054%	    99.462%	     0.000	        1
+	                           transpose 139	        1	     0.037	     0.053%	    99.515%	     0.000	        1
+	                               slice 185	        1	     0.036	     0.052%	    99.566%	     0.000	        1
+	                    slice 163 -> mul 165	        1	     0.035	     0.050%	    99.617%	     0.000	        1
+	                               slice 179	        1	     0.034	     0.049%	    99.665%	     0.000	        1
+	                  winograd_4x4_to_36 147	        1	     0.031	     0.044%	    99.710%	     0.000	        1
+	                              concat 174	        1	     0.029	     0.041%	    99.751%	     0.000	        1
+	                                 add 172	        1	     0.022	     0.031%	    99.783%	     0.000	        1
+	                               slice 173	        1	     0.019	     0.027%	    99.810%	     0.000	        1
+	                              concat 146	        1	     0.018	     0.026%	    99.835%	     0.000	        1
+	                              concat 153	        1	     0.016	     0.023%	    99.858%	     0.000	        1
+	                                 mul 133	        1	     0.014	     0.020%	    99.878%	     0.000	        1
+	                              concat 140	        1	     0.014	     0.020%	    99.898%	     0.000	        1
+	                               slice 164	        1	     0.013	     0.019%	    99.917%	     0.000	        1
+	                    slice 143 -> mul 145	        1	     0.012	     0.017%	    99.934%	     0.000	        1
+	                          pooling_2d 135	        1	     0.008	     0.011%	    99.946%	     0.000	        1
+	                 subtract 190 -> mul 191	        1	     0.007	     0.010%	    99.956%	     0.000	        1
+	                               slice 158	        1	     0.007	     0.010%	    99.966%	     0.000	        1
+	                               slice 138	        1	     0.007	     0.010%	    99.976%	     0.000	        1
+	                                 add 152	        1	     0.006	     0.009%	    99.984%	     0.000	        1
+	                               slice 137	        1	     0.005	     0.007%	    99.991%	     0.000	        1
+	                          pooling_2d 136	        1	     0.004	     0.006%	    99.997%	     0.000	        1
+	                               slice 144	        1	     0.002	     0.003%	   100.000%	     0.000	        1
+	                 subtract 211 -> mul 212	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+	                 subtract 169 -> mul 170	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+	                 subtract 149 -> mul 150	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+	                          reduce_sum 127	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+
+Timings (microseconds): count=10 first=69884 curr=69715 min=69715 max=71014 avg=69978 std=369
+Memory (bytes): count=0
+203 nodes observed
+
+
+
