@@ -1,0 +1,487 @@
+INFO: STARTING!
+INFO: Log parameter values verbosely: [1]
+INFO: Min num runs: [10]
+INFO: Min runs duration (seconds): [1]
+INFO: Max runs duration (seconds): [150]
+INFO: Inter-run delay (seconds): [-1]
+INFO: Number of prorated runs per second: [-1]
+INFO: Num threads: [-1]
+INFO: Use caching: [0]
+INFO: Benchmark name: []
+INFO: Output prefix: []
+INFO: Min warmup runs: [1]
+INFO: Min warmup runs duration (seconds): [0.5]
+INFO: Run w/o invoking kernels: [0]
+INFO: Report the peak memory footprint: [0]
+INFO: Memory footprint check interval (ms): [50]
+INFO: Graph: [/data/local/tmp/rvm_benchmark/rvm_mobilenetv3_720x1280_ds_100.tflite]
+INFO: Signature to run: []
+INFO: Input layers: []
+INFO: Input shapes: []
+INFO: Input value ranges: []
+INFO: Input value files: []
+INFO: Allow fp16: [0]
+INFO: Require full delegation: [0]
+INFO: Enable op profiling: [1]
+INFO: Op profiling output mode.: [stdout]
+INFO: Op profiling output file.: []
+INFO: Max initial profiling buffer entries: [1024]
+INFO: Allow dynamic increase on profiling buffer entries: [0]
+INFO: CSV File to export profiling data to: []
+INFO: Enable Model Runtime Info Export: [0]
+INFO: Proto File to export model runtime info to: []
+INFO: Print pre-invoke interpreter state: [0]
+INFO: Print post-invoke interpreter state: [0]
+INFO: Release dynamic tensor memory: [0]
+INFO: Optimize memory usage for large tensors: [0]
+INFO: Disable delegate clustering: [0]
+INFO: Constant CAST output cache: [0]
+INFO: File path to export outputs layer to: []
+INFO: File path to export outputs layer as tf example to: []
+INFO: Tensor name display length: [25]
+INFO: Tensor type display length: [15]
+INFO: Tensor allocation type display length: [18]
+INFO: print out all supported flags: [0]
+INFO: #threads used for CPU inference: [-1]
+INFO: Max number of delegated partitions: [0]
+INFO: Min nodes per partition: [0]
+INFO: Index of the first node that could be delegated: [0]
+INFO: Index of the last node that could be delegated: [2147483647]
+INFO: Number of GPU delegate invoke loop iterations: [1]
+INFO: Directory for delegate serialization: []
+INFO: Model-specific token/key for delegate serialization.: []
+INFO: External delegate path: []
+INFO: External delegate options: []
+INFO: Use gpu: [1]
+INFO: Allow lower precision in gpu: [1]
+INFO: Enable running quant models in gpu: [1]
+INFO: Prefer maximizing the throughput in gpu: [0]
+INFO: GPU backend: []
+INFO: Use Hexagon: [0]
+INFO: Hexagon lib path: [/data/local/tmp]
+INFO: Hexagon profiling: [0]
+INFO: Use NNAPI: [0]
+INFO: Use xnnpack: [0]
+INFO: xnnpack_force_fp16: [0]
+INFO: xnnpack_weight_cache_file_path: []
+INFO: Use Slinky: [0]
+INFO: Loaded model /data/local/tmp/rvm_benchmark/rvm_mobilenetv3_720x1280_ds_100.tflite
+INFO: Initialized TensorFlow Lite runtime.
+INFO: GPU delegate created.
+INFO: Created TensorFlow Lite delegate for GPU.
+INFO: Loaded OpenCL library with dlopen.
+VERBOSE: Replacing 250 out of 250 node(s) with delegate (TfLiteGpuDelegateV2) node, yielding 1 partitions for subgraph 0.
+INFO: Initialized OpenCL-based API.
+INFO: Created 1 GPU delegate kernels.
+INFO: Explicitly applied GPU delegate, and the model graph will be completely executed by the delegate.
+INFO: The input model file size (MB): 15.2005
+INFO: Initialized session in 5926.14ms.
+INFO: Running benchmark for at least 1 iterations and at least 0.5 seconds but terminate if exceeding 150 seconds.
+INFO: count=2 first=399726 curr=321080 min=321080 max=399726 avg=360403 std=39323 p5=321080 median=399726 p95=399726
+
+INFO: Running benchmark for at least 10 iterations and at least 1 seconds but terminate if exceeding 150 seconds.
+INFO: count=10 first=317881 curr=348555 min=317881 max=348555 avg=328400 std=9844 p5=317881 median=325624 p95=348555
+
+INFO: Inference timings in us: Init: 5926143, First inference: 399726, Warmup (avg): 360403, Inference (avg): 328400
+INFO: Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+INFO: Memory footprint delta from the start of the tool (MB): init=140.668 overall=218.137
+INFO: Profiling Info for Benchmark Initialization:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	 5922.682	 5922.682	 99.995%	 99.995%	138824.000	        1	ModifyGraphWithDelegate/0
+	                         AllocateTensors	    0.267	    0.267	  0.005%	100.000%	     0.000	        1	AllocateTensors/0
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	 5922.682	 5922.682	 99.995%	 99.995%	138824.000	        1	ModifyGraphWithDelegate/0
+	                         AllocateTensors	    0.267	    0.267	  0.005%	100.000%	     0.000	        1	AllocateTensors/0
+
+Number of nodes executed: 2
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                 ModifyGraphWithDelegate	        1	  5922.682	    99.995%	    99.995%	138824.000	        1
+	                         AllocateTensors	        1	     0.267	     0.005%	   100.000%	     0.000	        1
+
+Timings (microseconds): count=1 curr=5922949
+Memory (bytes): count=0
+2 nodes observed
+
+
+
+INFO: Operator-wise Profiling Info for Regular Benchmark Runs:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                                   mul 0	    0.620	    0.547	  0.418%	  0.418%	     0.000	        1	Delegate/mul 0:0
+	                             transpose 1	    4.313	    4.269	  3.256%	  3.674%	     0.000	        1	Delegate/transpose 1:1
+	                     subtract 2 -> mul 3	    0.416	    0.414	  0.316%	  3.990%	     0.000	        1	Delegate/subtract 2 -> mul 3:2
+	                             transpose 4	    1.236	    1.238	  0.944%	  4.934%	     0.000	        1	Delegate/transpose 4:3
+	        convolution_2d 6 -> hard_swish 7	    0.714	    0.707	  0.539%	  5.473%	     0.000	        1	Delegate/convolution_2d 6 -> hard_swish 7:4
+	       depthwise_convolution 8 -> relu 9	    0.565	    0.558	  0.426%	  5.899%	     0.000	        1	Delegate/depthwise_convolution 8 -> relu 9:5
+	             convolution_2d 10 -> add 11	    0.847	    0.837	  0.639%	  6.538%	     0.000	        1	Delegate/convolution_2d 10 -> add 11:6
+	            convolution_2d 12 -> relu 13	    1.537	    1.480	  1.128%	  7.666%	     0.000	        1	Delegate/convolution_2d 12 -> relu 13:7
+	     depthwise_convolution 15 -> relu 16	    1.421	    1.383	  1.055%	  8.721%	     0.000	        1	Delegate/depthwise_convolution 15 -> relu 16:8
+	                       convolution_2d 17	    0.423	    0.415	  0.316%	  9.037%	     0.000	        1	Delegate/convolution_2d 17:9
+	            convolution_2d 18 -> relu 19	    0.466	    0.453	  0.346%	  9.382%	     0.000	        1	Delegate/convolution_2d 18 -> relu 19:10
+	     depthwise_convolution 20 -> relu 21	    0.642	    0.625	  0.477%	  9.859%	     0.000	        1	Delegate/depthwise_convolution 20 -> relu 21:11
+	             convolution_2d 22 -> add 23	    0.522	    0.516	  0.393%	 10.252%	     0.000	        1	Delegate/convolution_2d 22 -> add 23:12
+	            convolution_2d 24 -> relu 25	    0.461	    0.450	  0.343%	 10.595%	     0.000	        1	Delegate/convolution_2d 24 -> relu 25:13
+	     depthwise_convolution 27 -> relu 28	    0.510	    0.495	  0.378%	 10.973%	     0.000	        1	Delegate/depthwise_convolution 27 -> relu 28:14
+	                           reduce_sum 29	    0.086	    0.083	  0.063%	 11.036%	     0.000	        1	Delegate/reduce_sum 29:15
+	           fully_connected 33 -> relu 34	    0.007	    0.007	  0.005%	 11.042%	     0.000	        1	Delegate/fully_connected 33 -> relu 34:16
+	 fully_connected 35 -> relu 36 -> mul 37	    0.006	    0.006	  0.004%	 11.046%	     0.000	        1	Delegate/fully_connected 35 -> relu 36 -> mul 37:17
+	                                  mul 38	    0.139	    0.136	  0.104%	 11.150%	     0.000	        1	Delegate/mul 38:18
+	                       convolution_2d 39	    0.135	    0.135	  0.103%	 11.253%	     0.000	        1	Delegate/convolution_2d 39:19
+	            convolution_2d 40 -> relu 41	    0.215	    0.212	  0.162%	 11.414%	     0.000	        1	Delegate/convolution_2d 40 -> relu 41:20
+	     depthwise_convolution 42 -> relu 43	    0.699	    0.691	  0.527%	 11.941%	     0.000	        1	Delegate/depthwise_convolution 42 -> relu 43:21
+	                           reduce_sum 44	    0.146	    0.143	  0.109%	 12.050%	     0.000	        1	Delegate/reduce_sum 44:22
+	           fully_connected 48 -> relu 49	    0.009	    0.009	  0.007%	 12.057%	     0.000	        1	Delegate/fully_connected 48 -> relu 49:23
+	 fully_connected 50 -> relu 51 -> mul 52	    0.006	    0.006	  0.004%	 12.062%	     0.000	        1	Delegate/fully_connected 50 -> relu 51 -> mul 52:24
+	                                  mul 53	    0.245	    0.241	  0.184%	 12.246%	     0.000	        1	Delegate/mul 53:25
+	             convolution_2d 54 -> add 55	    0.245	    0.242	  0.184%	 12.430%	     0.000	        1	Delegate/convolution_2d 54 -> add 55:26
+	            convolution_2d 56 -> relu 57	    0.215	    0.210	  0.160%	 12.590%	     0.000	        1	Delegate/convolution_2d 56 -> relu 57:27
+	     depthwise_convolution 58 -> relu 59	    0.696	    0.691	  0.527%	 13.117%	     0.000	        1	Delegate/depthwise_convolution 58 -> relu 59:28
+	                           reduce_sum 60	    0.146	    0.142	  0.109%	 13.226%	     0.000	        1	Delegate/reduce_sum 60:29
+	           fully_connected 64 -> relu 65	    0.009	    0.009	  0.007%	 13.233%	     0.000	        1	Delegate/fully_connected 64 -> relu 65:30
+	 fully_connected 66 -> relu 67 -> mul 68	    0.004	    0.005	  0.004%	 13.237%	     0.000	        1	Delegate/fully_connected 66 -> relu 67 -> mul 68:31
+	                                  mul 69	    0.243	    0.241	  0.184%	 13.420%	     0.000	        1	Delegate/mul 69:32
+	             convolution_2d 70 -> add 71	    0.240	    0.238	  0.182%	 13.602%	     0.000	        1	Delegate/convolution_2d 70 -> add 71:33
+	      convolution_2d 72 -> hard_swish 73	    0.376	    0.372	  0.284%	 13.886%	     0.000	        1	Delegate/convolution_2d 72 -> hard_swish 73:34
+	depthwise_convolution 75 -> hard_swish 76	    0.352	    0.342	  0.261%	 14.147%	     0.000	        1	Delegate/depthwise_convolution 75 -> hard_swish 76:35
+	                       convolution_2d 77	    0.186	    0.187	  0.142%	 14.289%	     0.000	        1	Delegate/convolution_2d 77:36
+	      convolution_2d 78 -> hard_swish 79	    0.192	    0.192	  0.146%	 14.436%	     0.000	        1	Delegate/convolution_2d 78 -> hard_swish 79:37
+	depthwise_convolution 80 -> hard_swish 81	    0.120	    0.114	  0.087%	 14.523%	     0.000	        1	Delegate/depthwise_convolution 80 -> hard_swish 81:38
+	             convolution_2d 82 -> add 83	    0.177	    0.176	  0.135%	 14.658%	     0.000	        1	Delegate/convolution_2d 82 -> add 83:39
+	      convolution_2d 84 -> hard_swish 85	    0.136	    0.136	  0.104%	 14.762%	     0.000	        1	Delegate/convolution_2d 84 -> hard_swish 85:40
+	depthwise_convolution 86 -> hard_swish 87	    0.101	    0.104	  0.079%	 14.841%	     0.000	        1	Delegate/depthwise_convolution 86 -> hard_swish 87:41
+	             convolution_2d 88 -> add 89	    0.166	    0.164	  0.125%	 14.966%	     0.000	        1	Delegate/convolution_2d 88 -> add 89:42
+	      convolution_2d 90 -> hard_swish 91	    0.136	    0.136	  0.104%	 15.070%	     0.000	        1	Delegate/convolution_2d 90 -> hard_swish 91:43
+	depthwise_convolution 92 -> hard_swish 93	    0.106	    0.105	  0.080%	 15.150%	     0.000	        1	Delegate/depthwise_convolution 92 -> hard_swish 93:44
+	             convolution_2d 94 -> add 95	    0.163	    0.164	  0.125%	 15.275%	     0.000	        1	Delegate/convolution_2d 94 -> add 95:45
+	      convolution_2d 96 -> hard_swish 97	    0.379	    0.377	  0.288%	 15.563%	     0.000	        1	Delegate/convolution_2d 96 -> hard_swish 97:46
+	depthwise_convolution 98 -> hard_swish 99	    0.278	    0.272	  0.207%	 15.770%	     0.000	        1	Delegate/depthwise_convolution 98 -> hard_swish 99:47
+	                          reduce_sum 100	    0.143	    0.141	  0.107%	 15.877%	     0.000	        1	Delegate/reduce_sum 100:48
+	         fully_connected 104 -> relu 105	    0.029	    0.030	  0.023%	 15.900%	     0.000	        1	Delegate/fully_connected 104 -> relu 105:49
+	fully_connected 106 -> relu 107 -> mul 108	    0.012	    0.013	  0.010%	 15.909%	     0.000	        1	Delegate/fully_connected 106 -> relu 107 -> mul 108:50
+	                                 mul 109	    0.244	    0.244	  0.186%	 16.096%	     0.000	        1	Delegate/mul 109:51
+	                      convolution_2d 110	    0.656	    0.657	  0.501%	 16.597%	     0.000	        1	Delegate/convolution_2d 110:52
+	    convolution_2d 111 -> hard_swish 112	    0.748	    0.745	  0.568%	 17.165%	     0.000	        1	Delegate/convolution_2d 111 -> hard_swish 112:53
+	depthwise_convolution 113 -> hard_swish 114	    0.389	    0.374	  0.285%	 17.450%	     0.000	        1	Delegate/depthwise_convolution 113 -> hard_swish 114:54
+	                          reduce_sum 115	    0.193	    0.189	  0.144%	 17.595%	     0.000	        1	Delegate/reduce_sum 115:55
+	         fully_connected 119 -> relu 120	    0.038	    0.038	  0.029%	 17.624%	     0.000	        1	Delegate/fully_connected 119 -> relu 120:56
+	fully_connected 121 -> relu 122 -> mul 123	    0.016	    0.017	  0.013%	 17.637%	     0.000	        1	Delegate/fully_connected 121 -> relu 122 -> mul 123:57
+	                                 mul 124	    0.352	    0.347	  0.265%	 17.901%	     0.000	        1	Delegate/mul 124:58
+	           convolution_2d 125 -> add 126	    0.959	    0.959	  0.732%	 18.633%	     0.000	        1	Delegate/convolution_2d 125 -> add 126:59
+	    convolution_2d 127 -> hard_swish 128	    0.744	    0.745	  0.568%	 19.201%	     0.000	        1	Delegate/convolution_2d 127 -> hard_swish 128:60
+	depthwise_convolution 129 -> hard_swish 130	    0.783	    0.781	  0.596%	 19.797%	     0.000	        1	Delegate/depthwise_convolution 129 -> hard_swish 130:61
+	                          reduce_sum 131	    0.189	    0.190	  0.145%	 19.941%	     0.000	        1	Delegate/reduce_sum 131:62
+	         fully_connected 135 -> relu 136	    0.037	    0.037	  0.028%	 19.970%	     0.000	        1	Delegate/fully_connected 135 -> relu 136:63
+	fully_connected 137 -> relu 138 -> mul 139	    0.017	    0.016	  0.012%	 19.982%	     0.000	        1	Delegate/fully_connected 137 -> relu 138 -> mul 139:64
+	                                 mul 140	    0.345	    0.346	  0.264%	 20.246%	     0.000	        1	Delegate/mul 140:65
+	                      convolution_2d 141	    0.961	    0.964	  0.735%	 20.981%	     0.000	        1	Delegate/convolution_2d 141:66
+	    convolution_2d 142 -> hard_swish 143	    1.380	    1.383	  1.055%	 22.035%	     0.000	        1	Delegate/convolution_2d 142 -> hard_swish 143:67
+	depthwise_convolution 144 -> hard_swish 145	    1.120	    1.112	  0.848%	 22.883%	     0.000	        1	Delegate/depthwise_convolution 144 -> hard_swish 145:68
+	                          reduce_sum 146	    0.272	    0.266	  0.203%	 23.086%	     0.000	        1	Delegate/reduce_sum 146:69
+	         fully_connected 150 -> relu 151	    0.066	    0.065	  0.049%	 23.136%	     0.000	        1	Delegate/fully_connected 150 -> relu 151:70
+	fully_connected 152 -> relu 153 -> mul 154	    0.026	    0.025	  0.019%	 23.155%	     0.000	        1	Delegate/fully_connected 152 -> relu 153 -> mul 154:71
+	                                 mul 155	    0.501	    0.501	  0.382%	 23.537%	     0.000	        1	Delegate/mul 155:72
+	           convolution_2d 156 -> add 157	    1.421	    1.423	  1.086%	 24.623%	     0.000	        1	Delegate/convolution_2d 156 -> add 157:73
+	    convolution_2d 158 -> hard_swish 159	    1.385	    1.385	  1.056%	 25.679%	     0.000	        1	Delegate/convolution_2d 158 -> hard_swish 159:74
+	depthwise_convolution 160 -> hard_swish 161	    1.117	    1.113	  0.849%	 26.528%	     0.000	        1	Delegate/depthwise_convolution 160 -> hard_swish 161:75
+	                          reduce_sum 162	    0.269	    0.266	  0.203%	 26.730%	     0.000	        1	Delegate/reduce_sum 162:76
+	         fully_connected 166 -> relu 167	    0.063	    0.064	  0.048%	 26.779%	     0.000	        1	Delegate/fully_connected 166 -> relu 167:77
+	fully_connected 168 -> relu 169 -> mul 170	    0.026	    0.025	  0.019%	 26.798%	     0.000	        1	Delegate/fully_connected 168 -> relu 169 -> mul 170:78
+	                                 mul 171	    0.506	    0.501	  0.382%	 27.180%	     0.000	        1	Delegate/mul 171:79
+	           convolution_2d 172 -> add 173	    1.421	    1.423	  1.086%	 28.266%	     0.000	        1	Delegate/convolution_2d 172 -> add 173:80
+	    convolution_2d 174 -> hard_swish 175	    1.387	    1.383	  1.055%	 29.321%	     0.000	        1	Delegate/convolution_2d 174 -> hard_swish 175:81
+	          convolution_2d 176 -> relu 177	    1.410	    1.414	  1.078%	 30.399%	     0.000	        1	Delegate/convolution_2d 176 -> relu 177:82
+	                          reduce_sum 178	    0.000	    0.000	  0.000%	 30.399%	     0.000	        1	Delegate/reduce_sum 178:83
+	      fully_connected 182 -> sigmoid 183	    0.057	    0.057	  0.043%	 30.442%	     0.000	        1	Delegate/fully_connected 182 -> sigmoid 183:84
+	                                 mul 184	    0.060	    0.059	  0.045%	 30.487%	     0.000	        1	Delegate/mul 184:85
+	                           transpose 185	    1.272	    1.278	  0.975%	 31.462%	     0.000	        1	Delegate/transpose 185:86
+	                          pooling_2d 186	    0.335	    0.334	  0.255%	 31.717%	     0.000	        1	Delegate/pooling_2d 186:87
+	                          pooling_2d 187	    0.089	    0.086	  0.066%	 31.782%	     0.000	        1	Delegate/pooling_2d 187:88
+	                          pooling_2d 188	    0.018	    0.018	  0.014%	 31.796%	     0.000	        1	Delegate/pooling_2d 188:89
+	                               slice 189	    0.031	    0.029	  0.022%	 31.819%	     0.000	        1	Delegate/slice 189:90
+	                               slice 190	    0.027	    0.028	  0.021%	 31.840%	     0.000	        1	Delegate/slice 190:91
+	                           transpose 191	    0.103	    0.103	  0.079%	 31.919%	     0.000	        1	Delegate/transpose 191:92
+	                              concat 192	    0.070	    0.070	  0.054%	 31.972%	     0.000	        1	Delegate/concat 192:93
+	                  winograd_4x4_to_36 193	    0.140	    0.137	  0.104%	 32.076%	     0.000	        1	Delegate/winograd_4x4_to_36 193:94
+	        convolution_winograd_4x4_6x6 193	    0.319	    0.319	  0.243%	 32.320%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 193:95
+	   winograd_36_to_4x4 193 -> sigmoid 194	    0.135	    0.134	  0.103%	 32.422%	     0.000	        1	Delegate/winograd_36_to_4x4 193 -> sigmoid 194:96
+	                    slice 195 -> mul 197	    0.054	    0.054	  0.041%	 32.463%	     0.000	        1	Delegate/slice 195 -> mul 197:97
+	                               slice 196	    0.026	    0.026	  0.020%	 32.483%	     0.000	        1	Delegate/slice 196:98
+	                              concat 198	    0.071	    0.070	  0.053%	 32.536%	     0.000	        1	Delegate/concat 198:99
+	                  winograd_4x4_to_36 199	    0.123	    0.122	  0.093%	 32.629%	     0.000	        1	Delegate/winograd_4x4_to_36 199:100
+	        convolution_winograd_4x4_6x6 199	    0.184	    0.184	  0.140%	 32.770%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 199:101
+	winograd_36_to_4x4 199 -> tanh 200 -> mul 203	    0.156	    0.159	  0.122%	 32.891%	     0.000	        1	Delegate/winograd_36_to_4x4 199 -> tanh 200 -> mul 203:102
+	                 subtract 201 -> mul 202	    0.000	    0.000	  0.000%	 32.891%	     0.000	        1	Delegate/subtract 201 -> mul 202:103
+	                                 add 204	    0.049	    0.050	  0.038%	 32.929%	     0.000	        1	Delegate/add 204:104
+	                              concat 205	    0.066	    0.067	  0.051%	 32.980%	     0.000	        1	Delegate/concat 205:105
+	                              resize 206	    0.182	    0.183	  0.140%	 33.120%	     0.000	        1	Delegate/resize 206:106
+	                              concat 207	    0.380	    0.382	  0.292%	 33.411%	     0.000	        1	Delegate/concat 207:107
+	                  winograd_4x4_to_36 208	    0.664	    0.666	  0.508%	 33.919%	     0.000	        1	Delegate/winograd_4x4_to_36 208:108
+	        convolution_winograd_4x4_6x6 208	    0.991	    0.993	  0.757%	 34.676%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 208:109
+	      winograd_36_to_4x4 208 -> relu 209	    0.286	    0.286	  0.218%	 34.894%	     0.000	        1	Delegate/winograd_36_to_4x4 208 -> relu 209:110
+	                               slice 210	    0.086	    0.084	  0.064%	 34.959%	     0.000	        1	Delegate/slice 210:111
+	                           transpose 211	    0.231	    0.236	  0.180%	 35.138%	     0.000	        1	Delegate/transpose 211:112
+	                              concat 212	    0.179	    0.179	  0.137%	 35.275%	     0.000	        1	Delegate/concat 212:113
+	                  winograd_4x4_to_36 213	    0.301	    0.300	  0.229%	 35.504%	     0.000	        1	Delegate/winograd_4x4_to_36 213:114
+	        convolution_winograd_4x4_6x6 213	    0.525	    0.528	  0.403%	 35.907%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 213:115
+	   winograd_36_to_4x4 213 -> sigmoid 214	    0.297	    0.299	  0.228%	 36.135%	     0.000	        1	Delegate/winograd_36_to_4x4 213 -> sigmoid 214:116
+	                    slice 215 -> mul 217	    0.126	    0.127	  0.097%	 36.232%	     0.000	        1	Delegate/slice 215 -> mul 217:117
+	                               slice 216	    0.076	    0.076	  0.058%	 36.290%	     0.000	        1	Delegate/slice 216:118
+	                              concat 218	    0.176	    0.177	  0.135%	 36.425%	     0.000	        1	Delegate/concat 218:119
+	                  winograd_4x4_to_36 219	    0.296	    0.301	  0.229%	 36.654%	     0.000	        1	Delegate/winograd_4x4_to_36 219:120
+	        convolution_winograd_4x4_6x6 219	    0.346	    0.346	  0.264%	 36.919%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 219:121
+	winograd_36_to_4x4 219 -> tanh 220 -> mul 223	    0.299	    0.293	  0.223%	 37.142%	     0.000	        1	Delegate/winograd_36_to_4x4 219 -> tanh 220 -> mul 223:122
+	                 subtract 221 -> mul 222	    0.061	    0.070	  0.053%	 37.195%	     0.000	        1	Delegate/subtract 221 -> mul 222:123
+	                                 add 224	    0.123	    0.124	  0.094%	 37.289%	     0.000	        1	Delegate/add 224:124
+	                               slice 225	    0.079	    0.078	  0.059%	 37.349%	     0.000	        1	Delegate/slice 225:125
+	                              concat 226	    0.176	    0.176	  0.134%	 37.483%	     0.000	        1	Delegate/concat 226:126
+	                              resize 227	    0.457	    0.459	  0.350%	 37.833%	     0.000	        1	Delegate/resize 227:127
+	                              concat 228	    0.928	    0.932	  0.711%	 38.545%	     0.000	        1	Delegate/concat 228:128
+	                  winograd_4x4_to_36 229	    1.627	    1.637	  1.249%	 39.793%	     0.000	        1	Delegate/winograd_4x4_to_36 229:129
+	        convolution_winograd_4x4_6x6 229	    1.580	    1.587	  1.210%	 41.004%	     0.000	        1	Delegate/convolution_winograd_4x4_6x6 229:130
+	      winograd_36_to_4x4 229 -> relu 230	    0.547	    0.546	  0.417%	 41.420%	     0.000	        1	Delegate/winograd_36_to_4x4 229 -> relu 230:131
+	                               slice 231	    0.168	    0.166	  0.127%	 41.547%	     0.000	        1	Delegate/slice 231:132
+	                           transpose 232	    0.513	    0.517	  0.395%	 41.942%	     0.000	        1	Delegate/transpose 232:133
+	                              concat 233	    0.337	    0.340	  0.260%	 42.201%	     0.000	        1	Delegate/concat 233:134
+	       convolution_2d 234 -> sigmoid 235	    2.051	    2.053	  1.566%	 43.767%	     0.000	        1	Delegate/convolution_2d 234 -> sigmoid 235:135
+	                    slice 236 -> mul 238	    0.249	    0.248	  0.189%	 43.956%	     0.000	        1	Delegate/slice 236 -> mul 238:136
+	                               slice 237	    0.163	    0.162	  0.124%	 44.080%	     0.000	        1	Delegate/slice 237:137
+	                              concat 239	    0.342	    0.340	  0.259%	 44.339%	     0.000	        1	Delegate/concat 239:138
+	convolution_2d 240 -> tanh 241 -> mul 244	    1.847	    1.852	  1.412%	 45.752%	     0.000	        1	Delegate/convolution_2d 240 -> tanh 241 -> mul 244:139
+	                 subtract 242 -> mul 243	    0.000	    0.000	  0.000%	 45.752%	     0.000	        1	Delegate/subtract 242 -> mul 243:140
+	                                 add 245	    0.241	    0.242	  0.184%	 45.936%	     0.000	        1	Delegate/add 245:141
+	                               slice 246	    0.167	    0.166	  0.126%	 46.062%	     0.000	        1	Delegate/slice 246:142
+	                              concat 247	    0.339	    0.338	  0.258%	 46.320%	     0.000	        1	Delegate/concat 247:143
+	                              resize 248	    0.910	    0.909	  0.693%	 47.013%	     0.000	        1	Delegate/resize 248:144
+	                              concat 249	    2.071	    2.047	  1.561%	 48.575%	     0.000	        1	Delegate/concat 249:145
+	          convolution_2d 250 -> relu 251	    8.440	    8.445	  6.441%	 55.015%	     0.000	        1	Delegate/convolution_2d 250 -> relu 251:146
+	                               slice 252	    0.531	    0.530	  0.404%	 55.420%	     0.000	        1	Delegate/slice 252:147
+	                           transpose 253	    2.000	    1.966	  1.499%	 56.919%	     0.000	        1	Delegate/transpose 253:148
+	                              concat 254	    1.099	    1.098	  0.837%	 57.756%	     0.000	        1	Delegate/concat 254:149
+	       convolution_2d 255 -> sigmoid 256	    4.959	    4.967	  3.788%	 61.544%	     0.000	        1	Delegate/convolution_2d 255 -> sigmoid 256:150
+	                    slice 257 -> mul 259	    0.780	    0.777	  0.592%	 62.137%	     0.000	        1	Delegate/slice 257 -> mul 259:151
+	                               slice 258	    0.529	    0.527	  0.402%	 62.538%	     0.000	        1	Delegate/slice 258:152
+	                              concat 260	    1.106	    1.101	  0.840%	 63.378%	     0.000	        1	Delegate/concat 260:153
+	convolution_2d 261 -> tanh 262 -> mul 265	    4.595	    4.592	  3.502%	 66.880%	     0.000	        1	Delegate/convolution_2d 261 -> tanh 262 -> mul 265:154
+	                 subtract 263 -> mul 264	    0.000	    0.000	  0.000%	 66.880%	     0.000	        1	Delegate/subtract 263 -> mul 264:155
+	                                 add 266	    0.778	    0.772	  0.589%	 67.469%	     0.000	        1	Delegate/add 266:156
+	                               slice 267	    0.528	    0.527	  0.402%	 67.871%	     0.000	        1	Delegate/slice 267:157
+	                              concat 268	    1.108	    1.098	  0.837%	 68.708%	     0.000	        1	Delegate/concat 268:158
+	                              resize 269	    2.773	    2.825	  2.154%	 70.862%	     0.000	        1	Delegate/resize 269:159
+	                              concat 270	    4.886	    4.898	  3.735%	 74.598%	     0.000	        1	Delegate/concat 270:160
+	          convolution_2d 271 -> relu 272	   10.678	   10.679	  8.145%	 82.742%	     0.000	        1	Delegate/convolution_2d 271 -> relu 272:161
+	          convolution_2d 273 -> relu 274	    4.909	    4.916	  3.749%	 86.491%	     0.000	        1	Delegate/convolution_2d 273 -> relu 274:162
+	                      convolution_2d 275	    1.314	    1.314	  1.002%	 87.494%	     0.000	        1	Delegate/convolution_2d 275:163
+	                    slice 276 -> add 277	    0.775	    0.774	  0.591%	 88.084%	     0.000	        1	Delegate/slice 276 -> add 277:164
+	transpose 278 -> relu 279 -> subtract 280 -> relu 281 -> subtract 282 -> mul 288	    4.207	    4.199	  3.202%	 91.286%	     0.000	        1	Delegate/transpose 278 -> relu 279 -> subtract 280 -> relu 281 -> subtract 282 -> mul 288:165
+	                               slice 283	    1.438	    1.441	  1.099%	 92.386%	     0.000	        1	Delegate/slice 283:166
+	                                relu 284	    0.544	    0.542	  0.414%	 92.799%	     0.000	        1	Delegate/relu 284:167
+	                subtract 285 -> relu 286	    0.535	    0.533	  0.407%	 93.206%	     0.000	        1	Delegate/subtract 285 -> relu 286:168
+	                            subtract 287	    0.775	    0.774	  0.591%	 93.796%	     0.000	        1	Delegate/subtract 287:169
+	                           transpose 289	    1.240	    1.247	  0.951%	 94.747%	     0.000	        1	Delegate/transpose 289:170
+	                           transpose 290	    5.553	    5.550	  4.232%	 98.979%	     0.000	        1	Delegate/transpose 290:171
+	                           transpose 291	    0.948	    0.949	  0.724%	 99.703%	     0.000	        1	Delegate/transpose 291:172
+	                           transpose 292	    0.282	    0.281	  0.214%	 99.918%	     0.000	        1	Delegate/transpose 292:173
+	                           transpose 293	    0.108	    0.108	  0.082%	100.000%	     0.000	        1	Delegate/transpose 293:174
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	          convolution_2d 271 -> relu 272	   10.678	   10.679	  8.145%	  8.145%	     0.000	        1	Delegate/convolution_2d 271 -> relu 272:161
+	          convolution_2d 250 -> relu 251	    8.440	    8.445	  6.441%	 14.585%	     0.000	        1	Delegate/convolution_2d 250 -> relu 251:146
+	                           transpose 290	    5.553	    5.550	  4.232%	 18.817%	     0.000	        1	Delegate/transpose 290:171
+	       convolution_2d 255 -> sigmoid 256	    4.959	    4.967	  3.788%	 22.606%	     0.000	        1	Delegate/convolution_2d 255 -> sigmoid 256:150
+	          convolution_2d 273 -> relu 274	    4.909	    4.916	  3.749%	 26.355%	     0.000	        1	Delegate/convolution_2d 273 -> relu 274:162
+	                              concat 270	    4.886	    4.898	  3.735%	 30.090%	     0.000	        1	Delegate/concat 270:160
+	convolution_2d 261 -> tanh 262 -> mul 265	    4.595	    4.592	  3.502%	 33.592%	     0.000	        1	Delegate/convolution_2d 261 -> tanh 262 -> mul 265:154
+	                             transpose 1	    4.313	    4.269	  3.256%	 36.848%	     0.000	        1	Delegate/transpose 1:1
+	transpose 278 -> relu 279 -> subtract 280 -> relu 281 -> subtract 282 -> mul 288	    4.207	    4.199	  3.202%	 40.050%	     0.000	        1	Delegate/transpose 278 -> relu 279 -> subtract 280 -> relu 281 -> subtract 282 -> mul 288:165
+	                              resize 269	    2.773	    2.825	  2.154%	 42.204%	     0.000	        1	Delegate/resize 269:159
+
+Number of nodes executed: 175
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	          convolution_2d 271 -> relu 272	        1	    10.679	     8.149%	     8.149%	     0.000	        1
+	          convolution_2d 250 -> relu 251	        1	     8.445	     6.444%	    14.594%	     0.000	        1
+	                           transpose 290	        1	     5.549	     4.234%	    18.828%	     0.000	        1
+	       convolution_2d 255 -> sigmoid 256	        1	     4.967	     3.790%	    22.618%	     0.000	        1
+	          convolution_2d 273 -> relu 274	        1	     4.915	     3.751%	    26.369%	     0.000	        1
+	                              concat 270	        1	     4.897	     3.737%	    30.106%	     0.000	        1
+	convolution_2d 261 -> tanh 262 -> mul 265	        1	     4.591	     3.503%	    33.609%	     0.000	        1
+	                             transpose 1	        1	     4.269	     3.258%	    36.867%	     0.000	        1
+	transpose 278 -> relu 279 -> subtract 280 -> relu 281 -> subtract 282 -> mul 288	        1	     4.198	     3.204%	    40.071%	     0.000	        1
+	                              resize 269	        1	     2.824	     2.155%	    42.226%	     0.000	        1
+	       convolution_2d 234 -> sigmoid 235	        1	     2.053	     1.567%	    43.792%	     0.000	        1
+	                              concat 249	        1	     2.047	     1.562%	    45.354%	     0.000	        1
+	                           transpose 253	        1	     1.966	     1.500%	    46.854%	     0.000	        1
+	convolution_2d 240 -> tanh 241 -> mul 244	        1	     1.851	     1.413%	    48.267%	     0.000	        1
+	                  winograd_4x4_to_36 229	        1	     1.637	     1.249%	    49.516%	     0.000	        1
+	        convolution_winograd_4x4_6x6 229	        1	     1.587	     1.211%	    50.727%	     0.000	        1
+	            convolution_2d 12 -> relu 13	        1	     1.479	     1.129%	    51.856%	     0.000	        1
+	                               slice 283	        1	     1.441	     1.100%	    52.955%	     0.000	        1
+	           convolution_2d 172 -> add 173	        1	     1.423	     1.086%	    54.041%	     0.000	        1
+	           convolution_2d 156 -> add 157	        1	     1.423	     1.086%	    55.127%	     0.000	        1
+	          convolution_2d 176 -> relu 177	        1	     1.413	     1.078%	    56.206%	     0.000	        1
+	    convolution_2d 158 -> hard_swish 159	        1	     1.384	     1.056%	    57.262%	     0.000	        1
+	    convolution_2d 174 -> hard_swish 175	        1	     1.383	     1.055%	    58.317%	     0.000	        1
+	     depthwise_convolution 15 -> relu 16	        1	     1.382	     1.055%	    59.372%	     0.000	        1
+	    convolution_2d 142 -> hard_swish 143	        1	     1.382	     1.055%	    60.426%	     0.000	        1
+	                      convolution_2d 275	        1	     1.314	     1.003%	    61.429%	     0.000	        1
+	                           transpose 185	        1	     1.278	     0.975%	    62.404%	     0.000	        1
+	                           transpose 289	        1	     1.246	     0.951%	    63.355%	     0.000	        1
+	                             transpose 4	        1	     1.237	     0.944%	    64.299%	     0.000	        1
+	depthwise_convolution 160 -> hard_swish 161	        1	     1.113	     0.849%	    65.148%	     0.000	        1
+	depthwise_convolution 144 -> hard_swish 145	        1	     1.112	     0.849%	    65.997%	     0.000	        1
+	                              concat 260	        1	     1.101	     0.840%	    66.837%	     0.000	        1
+	                              concat 268	        1	     1.097	     0.837%	    67.674%	     0.000	        1
+	                              concat 254	        1	     1.097	     0.837%	    68.511%	     0.000	        1
+	        convolution_winograd_4x4_6x6 208	        1	     0.992	     0.757%	    69.268%	     0.000	        1
+	                      convolution_2d 141	        1	     0.963	     0.735%	    70.003%	     0.000	        1
+	           convolution_2d 125 -> add 126	        1	     0.959	     0.732%	    70.735%	     0.000	        1
+	                           transpose 291	        1	     0.949	     0.724%	    71.459%	     0.000	        1
+	                              concat 228	        1	     0.932	     0.711%	    72.170%	     0.000	        1
+	                              resize 248	        1	     0.908	     0.693%	    72.863%	     0.000	        1
+	             convolution_2d 10 -> add 11	        1	     0.837	     0.639%	    73.502%	     0.000	        1
+	depthwise_convolution 129 -> hard_swish 130	        1	     0.781	     0.596%	    74.098%	     0.000	        1
+	                    slice 257 -> mul 259	        1	     0.776	     0.592%	    74.690%	     0.000	        1
+	                            subtract 287	        1	     0.774	     0.591%	    75.281%	     0.000	        1
+	                    slice 276 -> add 277	        1	     0.774	     0.591%	    75.871%	     0.000	        1
+	                                 add 266	        1	     0.772	     0.589%	    76.461%	     0.000	        1
+	    convolution_2d 111 -> hard_swish 112	        1	     0.745	     0.569%	    77.029%	     0.000	        1
+	    convolution_2d 127 -> hard_swish 128	        1	     0.744	     0.568%	    77.597%	     0.000	        1
+	        convolution_2d 6 -> hard_swish 7	        1	     0.707	     0.540%	    78.136%	     0.000	        1
+	     depthwise_convolution 58 -> relu 59	        1	     0.691	     0.527%	    78.664%	     0.000	        1
+	     depthwise_convolution 42 -> relu 43	        1	     0.690	     0.527%	    79.190%	     0.000	        1
+	                  winograd_4x4_to_36 208	        1	     0.665	     0.507%	    79.698%	     0.000	        1
+	                      convolution_2d 110	        1	     0.657	     0.501%	    80.199%	     0.000	        1
+	     depthwise_convolution 20 -> relu 21	        1	     0.624	     0.476%	    80.675%	     0.000	        1
+	       depthwise_convolution 8 -> relu 9	        1	     0.558	     0.426%	    81.101%	     0.000	        1
+	                                   mul 0	        1	     0.547	     0.417%	    81.518%	     0.000	        1
+	      winograd_36_to_4x4 229 -> relu 230	        1	     0.546	     0.417%	    81.935%	     0.000	        1
+	                                relu 284	        1	     0.542	     0.414%	    82.349%	     0.000	        1
+	                subtract 285 -> relu 286	        1	     0.533	     0.407%	    82.755%	     0.000	        1
+	                               slice 252	        1	     0.530	     0.404%	    83.160%	     0.000	        1
+	        convolution_winograd_4x4_6x6 213	        1	     0.528	     0.403%	    83.563%	     0.000	        1
+	                               slice 267	        1	     0.527	     0.402%	    83.965%	     0.000	        1
+	                               slice 258	        1	     0.526	     0.401%	    84.366%	     0.000	        1
+	                           transpose 232	        1	     0.517	     0.395%	    84.761%	     0.000	        1
+	             convolution_2d 22 -> add 23	        1	     0.515	     0.393%	    85.154%	     0.000	        1
+	                                 mul 171	        1	     0.501	     0.382%	    85.536%	     0.000	        1
+	                                 mul 155	        1	     0.501	     0.382%	    85.918%	     0.000	        1
+	     depthwise_convolution 27 -> relu 28	        1	     0.495	     0.378%	    86.296%	     0.000	        1
+	                              resize 227	        1	     0.459	     0.350%	    86.646%	     0.000	        1
+	            convolution_2d 18 -> relu 19	        1	     0.453	     0.346%	    86.992%	     0.000	        1
+	            convolution_2d 24 -> relu 25	        1	     0.449	     0.343%	    87.335%	     0.000	        1
+	                     subtract 2 -> mul 3	        1	     0.414	     0.316%	    87.651%	     0.000	        1
+	                       convolution_2d 17	        1	     0.414	     0.316%	    87.967%	     0.000	        1
+	                              concat 207	        1	     0.382	     0.292%	    88.258%	     0.000	        1
+	      convolution_2d 96 -> hard_swish 97	        1	     0.377	     0.288%	    88.546%	     0.000	        1
+	depthwise_convolution 113 -> hard_swish 114	        1	     0.374	     0.285%	    88.831%	     0.000	        1
+	      convolution_2d 72 -> hard_swish 73	        1	     0.372	     0.284%	    89.115%	     0.000	        1
+	                                 mul 124	        1	     0.347	     0.265%	    89.380%	     0.000	        1
+	                                 mul 140	        1	     0.346	     0.264%	    89.644%	     0.000	        1
+	        convolution_winograd_4x4_6x6 219	        1	     0.346	     0.264%	    89.908%	     0.000	        1
+	depthwise_convolution 75 -> hard_swish 76	        1	     0.342	     0.261%	    90.169%	     0.000	        1
+	                              concat 239	        1	     0.340	     0.259%	    90.428%	     0.000	        1
+	                              concat 233	        1	     0.340	     0.259%	    90.688%	     0.000	        1
+	                              concat 247	        1	     0.338	     0.258%	    90.946%	     0.000	        1
+	                          pooling_2d 186	        1	     0.334	     0.255%	    91.201%	     0.000	        1
+	        convolution_winograd_4x4_6x6 193	        1	     0.319	     0.243%	    91.444%	     0.000	        1
+	                  winograd_4x4_to_36 219	        1	     0.300	     0.229%	    91.673%	     0.000	        1
+	                  winograd_4x4_to_36 213	        1	     0.300	     0.229%	    91.902%	     0.000	        1
+	   winograd_36_to_4x4 213 -> sigmoid 214	        1	     0.298	     0.227%	    92.129%	     0.000	        1
+	winograd_36_to_4x4 219 -> tanh 220 -> mul 223	        1	     0.292	     0.223%	    92.352%	     0.000	        1
+	      winograd_36_to_4x4 208 -> relu 209	        1	     0.286	     0.218%	    92.570%	     0.000	        1
+	                           transpose 292	        1	     0.281	     0.214%	    92.785%	     0.000	        1
+	depthwise_convolution 98 -> hard_swish 99	        1	     0.271	     0.207%	    92.992%	     0.000	        1
+	                          reduce_sum 146	        1	     0.266	     0.203%	    93.195%	     0.000	        1
+	                          reduce_sum 162	        1	     0.265	     0.202%	    93.397%	     0.000	        1
+	                    slice 236 -> mul 238	        1	     0.247	     0.188%	    93.585%	     0.000	        1
+	                                 mul 109	        1	     0.244	     0.186%	    93.772%	     0.000	        1
+	                                  mul 69	        1	     0.241	     0.184%	    93.955%	     0.000	        1
+	                                  mul 53	        1	     0.241	     0.184%	    94.139%	     0.000	        1
+	             convolution_2d 54 -> add 55	        1	     0.241	     0.184%	    94.323%	     0.000	        1
+	                                 add 245	        1	     0.241	     0.184%	    94.507%	     0.000	        1
+	             convolution_2d 70 -> add 71	        1	     0.238	     0.182%	    94.689%	     0.000	        1
+	                           transpose 211	        1	     0.235	     0.179%	    94.868%	     0.000	        1
+	            convolution_2d 40 -> relu 41	        1	     0.211	     0.161%	    95.029%	     0.000	        1
+	            convolution_2d 56 -> relu 57	        1	     0.209	     0.159%	    95.189%	     0.000	        1
+	      convolution_2d 78 -> hard_swish 79	        1	     0.191	     0.146%	    95.334%	     0.000	        1
+	                          reduce_sum 131	        1	     0.189	     0.144%	    95.479%	     0.000	        1
+	                          reduce_sum 115	        1	     0.188	     0.143%	    95.622%	     0.000	        1
+	                       convolution_2d 77	        1	     0.186	     0.142%	    95.764%	     0.000	        1
+	        convolution_winograd_4x4_6x6 199	        1	     0.184	     0.140%	    95.904%	     0.000	        1
+	                              resize 206	        1	     0.183	     0.140%	    96.044%	     0.000	        1
+	                              concat 212	        1	     0.179	     0.137%	    96.181%	     0.000	        1
+	                              concat 218	        1	     0.177	     0.135%	    96.316%	     0.000	        1
+	             convolution_2d 82 -> add 83	        1	     0.176	     0.134%	    96.450%	     0.000	        1
+	                              concat 226	        1	     0.176	     0.134%	    96.584%	     0.000	        1
+	                               slice 231	        1	     0.166	     0.127%	    96.711%	     0.000	        1
+	                               slice 246	        1	     0.165	     0.126%	    96.837%	     0.000	        1
+	             convolution_2d 88 -> add 89	        1	     0.164	     0.125%	    96.962%	     0.000	        1
+	             convolution_2d 94 -> add 95	        1	     0.163	     0.124%	    97.086%	     0.000	        1
+	                               slice 237	        1	     0.162	     0.124%	    97.210%	     0.000	        1
+	winograd_36_to_4x4 199 -> tanh 200 -> mul 203	        1	     0.159	     0.121%	    97.331%	     0.000	        1
+	                           reduce_sum 44	        1	     0.143	     0.109%	    97.441%	     0.000	        1
+	                           reduce_sum 60	        1	     0.142	     0.108%	    97.549%	     0.000	        1
+	                          reduce_sum 100	        1	     0.140	     0.107%	    97.656%	     0.000	        1
+	                  winograd_4x4_to_36 193	        1	     0.136	     0.104%	    97.760%	     0.000	        1
+	                                  mul 38	        1	     0.136	     0.104%	    97.863%	     0.000	        1
+	      convolution_2d 84 -> hard_swish 85	        1	     0.136	     0.104%	    97.967%	     0.000	        1
+	      convolution_2d 90 -> hard_swish 91	        1	     0.135	     0.103%	    98.070%	     0.000	        1
+	   winograd_36_to_4x4 193 -> sigmoid 194	        1	     0.134	     0.102%	    98.172%	     0.000	        1
+	                       convolution_2d 39	        1	     0.134	     0.102%	    98.275%	     0.000	        1
+	                    slice 215 -> mul 217	        1	     0.126	     0.096%	    98.371%	     0.000	        1
+	                                 add 224	        1	     0.123	     0.094%	    98.465%	     0.000	        1
+	                  winograd_4x4_to_36 199	        1	     0.121	     0.092%	    98.557%	     0.000	        1
+	depthwise_convolution 80 -> hard_swish 81	        1	     0.114	     0.087%	    98.644%	     0.000	        1
+	                           transpose 293	        1	     0.107	     0.082%	    98.726%	     0.000	        1
+	depthwise_convolution 92 -> hard_swish 93	        1	     0.105	     0.080%	    98.806%	     0.000	        1
+	                           transpose 191	        1	     0.103	     0.079%	    98.884%	     0.000	        1
+	depthwise_convolution 86 -> hard_swish 87	        1	     0.103	     0.079%	    98.963%	     0.000	        1
+	                          pooling_2d 187	        1	     0.085	     0.065%	    99.028%	     0.000	        1
+	                               slice 210	        1	     0.084	     0.064%	    99.092%	     0.000	        1
+	                           reduce_sum 29	        1	     0.082	     0.063%	    99.154%	     0.000	        1
+	                               slice 225	        1	     0.077	     0.059%	    99.213%	     0.000	        1
+	                               slice 216	        1	     0.076	     0.058%	    99.271%	     0.000	        1
+	                              concat 192	        1	     0.070	     0.053%	    99.325%	     0.000	        1
+	                 subtract 221 -> mul 222	        1	     0.069	     0.053%	    99.377%	     0.000	        1
+	                              concat 198	        1	     0.069	     0.053%	    99.430%	     0.000	        1
+	                              concat 205	        1	     0.066	     0.050%	    99.480%	     0.000	        1
+	         fully_connected 150 -> relu 151	        1	     0.064	     0.049%	    99.529%	     0.000	        1
+	         fully_connected 166 -> relu 167	        1	     0.063	     0.048%	    99.577%	     0.000	        1
+	                                 mul 184	        1	     0.058	     0.044%	    99.621%	     0.000	        1
+	      fully_connected 182 -> sigmoid 183	        1	     0.056	     0.043%	    99.664%	     0.000	        1
+	                    slice 195 -> mul 197	        1	     0.053	     0.040%	    99.705%	     0.000	        1
+	                                 add 204	        1	     0.049	     0.037%	    99.742%	     0.000	        1
+	         fully_connected 119 -> relu 120	        1	     0.038	     0.029%	    99.771%	     0.000	        1
+	         fully_connected 135 -> relu 136	        1	     0.037	     0.028%	    99.799%	     0.000	        1
+	                               slice 189	        1	     0.029	     0.022%	    99.821%	     0.000	        1
+	         fully_connected 104 -> relu 105	        1	     0.029	     0.022%	    99.844%	     0.000	        1
+	                               slice 190	        1	     0.028	     0.021%	    99.865%	     0.000	        1
+	                               slice 196	        1	     0.026	     0.020%	    99.885%	     0.000	        1
+	fully_connected 168 -> relu 169 -> mul 170	        1	     0.025	     0.019%	    99.904%	     0.000	        1
+	fully_connected 152 -> relu 153 -> mul 154	        1	     0.025	     0.019%	    99.923%	     0.000	        1
+	                          pooling_2d 188	        1	     0.018	     0.014%	    99.937%	     0.000	        1
+	fully_connected 137 -> relu 138 -> mul 139	        1	     0.016	     0.012%	    99.949%	     0.000	        1
+	fully_connected 121 -> relu 122 -> mul 123	        1	     0.016	     0.012%	    99.961%	     0.000	        1
+	fully_connected 106 -> relu 107 -> mul 108	        1	     0.012	     0.009%	    99.970%	     0.000	        1
+	           fully_connected 64 -> relu 65	        1	     0.009	     0.007%	    99.977%	     0.000	        1
+	           fully_connected 48 -> relu 49	        1	     0.009	     0.007%	    99.984%	     0.000	        1
+	           fully_connected 33 -> relu 34	        1	     0.007	     0.005%	    99.989%	     0.000	        1
+	 fully_connected 50 -> relu 51 -> mul 52	        1	     0.005	     0.004%	    99.993%	     0.000	        1
+	 fully_connected 35 -> relu 36 -> mul 37	        1	     0.005	     0.004%	    99.997%	     0.000	        1
+	 fully_connected 66 -> relu 67 -> mul 68	        1	     0.004	     0.003%	   100.000%	     0.000	        1
+	                 subtract 263 -> mul 264	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+	                 subtract 242 -> mul 243	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+	                 subtract 201 -> mul 202	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+	                          reduce_sum 178	        1	     0.000	     0.000%	   100.000%	     0.000	        1
+
+Timings (microseconds): count=10 first=131497 curr=130262 min=130262 max=131937 avg=131122 std=433
+Memory (bytes): count=0
+175 nodes observed
+
+
+

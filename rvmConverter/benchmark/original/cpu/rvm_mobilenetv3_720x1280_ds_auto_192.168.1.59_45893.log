@@ -1,0 +1,420 @@
+INFO: STARTING!
+INFO: Log parameter values verbosely: [1]
+INFO: Min num runs: [50]
+INFO: Min runs duration (seconds): [1]
+INFO: Max runs duration (seconds): [150]
+INFO: Inter-run delay (seconds): [-1]
+INFO: Number of prorated runs per second: [-1]
+INFO: Num threads: [10]
+INFO: Use caching: [0]
+INFO: Benchmark name: []
+INFO: Output prefix: []
+INFO: Min warmup runs: [1]
+INFO: Min warmup runs duration (seconds): [0.5]
+INFO: Run w/o invoking kernels: [0]
+INFO: Report the peak memory footprint: [0]
+INFO: Memory footprint check interval (ms): [50]
+INFO: Graph: [/data/local/tmp/rvm_benchmark/rvm_mobilenetv3_720x1280_ds_auto.tflite]
+INFO: Signature to run: []
+INFO: Input layers: []
+INFO: Input shapes: []
+INFO: Input value ranges: []
+INFO: Input value files: []
+INFO: Allow fp16: [0]
+INFO: Require full delegation: [0]
+INFO: Enable op profiling: [1]
+INFO: Op profiling output mode.: [stdout]
+INFO: Op profiling output file.: []
+INFO: Max initial profiling buffer entries: [1024]
+INFO: Allow dynamic increase on profiling buffer entries: [0]
+INFO: CSV File to export profiling data to: []
+INFO: Enable Model Runtime Info Export: [0]
+INFO: Proto File to export model runtime info to: []
+INFO: Print pre-invoke interpreter state: [0]
+INFO: Print post-invoke interpreter state: [0]
+INFO: Release dynamic tensor memory: [0]
+INFO: Optimize memory usage for large tensors: [0]
+INFO: Disable delegate clustering: [0]
+INFO: Constant CAST output cache: [0]
+INFO: File path to export outputs layer to: []
+INFO: File path to export outputs layer as tf example to: []
+INFO: Tensor name display length: [25]
+INFO: Tensor type display length: [15]
+INFO: Tensor allocation type display length: [18]
+INFO: print out all supported flags: [0]
+INFO: #threads used for CPU inference: [10]
+INFO: Max number of delegated partitions: [0]
+INFO: Min nodes per partition: [0]
+INFO: Index of the first node that could be delegated: [0]
+INFO: Index of the last node that could be delegated: [2147483647]
+INFO: Number of GPU delegate invoke loop iterations: [1]
+INFO: Directory for delegate serialization: []
+INFO: Model-specific token/key for delegate serialization.: []
+INFO: External delegate path: []
+INFO: External delegate options: []
+INFO: Use gpu: [0]
+INFO: Allow lower precision in gpu: [1]
+INFO: Enable running quant models in gpu: [1]
+INFO: Prefer maximizing the throughput in gpu: [0]
+INFO: GPU backend: []
+INFO: Use Hexagon: [0]
+INFO: Hexagon lib path: [/data/local/tmp]
+INFO: Hexagon profiling: [0]
+INFO: Use NNAPI: [0]
+INFO: Use xnnpack: [0]
+INFO: xnnpack_force_fp16: [0]
+INFO: xnnpack_weight_cache_file_path: []
+INFO: Use Slinky: [0]
+INFO: Loaded model /data/local/tmp/rvm_benchmark/rvm_mobilenetv3_720x1280_ds_auto.tflite
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: Replacing 280 out of 295 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 21 partitions for subgraph 0.
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 1.
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 2.
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 3.
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 4.
+INFO: The input model file size (MB): 15.4193
+INFO: Initialized session in 204.791ms.
+INFO: Running benchmark for at least 1 iterations and at least 0.5 seconds but terminate if exceeding 150 seconds.
+INFO: count=1 curr=820325 p5=820325 median=820325 p95=820325
+
+INFO: Running benchmark for at least 50 iterations and at least 1 seconds but terminate if exceeding 150 seconds.
+INFO: count=50 first=697754 curr=721457 min=469556 max=834378 avg=712581 std=91642 p5=492125 median=737058 p95=820712
+
+INFO: Inference timings in us: Init: 204791, First inference: 820325, Warmup (avg): 820325, Inference (avg): 712581
+INFO: Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+INFO: Memory footprint delta from the start of the tool (MB): init=223.441 overall=298.238
+INFO: Profiling Info for Benchmark Initialization:
+Primary graph (name: main) profile:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                         AllocateTensors	  151.865	  151.865	 81.971%	 81.971%	193940.000	        1	AllocateTensors/0
+	                 ModifyGraphWithDelegate	   33.401	   33.401	 18.029%	100.000%	 29880.000	        1	ModifyGraphWithDelegate/0
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                         AllocateTensors	  151.865	  151.865	 81.971%	 81.971%	193940.000	        1	AllocateTensors/0
+	                 ModifyGraphWithDelegate	   33.401	   33.401	 18.029%	100.000%	 29880.000	        1	ModifyGraphWithDelegate/0
+
+Number of nodes executed: 2
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                         AllocateTensors	        1	   151.865	    81.971%	    81.971%	193940.000	        1
+	                 ModifyGraphWithDelegate	        1	    33.401	    18.029%	   100.000%	 29880.000	        1
+
+Timings (microseconds): count=1 curr=185266
+Memory (bytes): count=0
+2 nodes observed
+
+Subgraph (index: 1, name: STABLEHLO_REDUCE_WINDOW1) profile:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.334	    0.334	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/1
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.334	    0.334	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/1
+
+Number of nodes executed: 1
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                 ModifyGraphWithDelegate	        1	     0.334	   100.000%	   100.000%	     0.000	        1
+
+Subgraph (index: 1, name: STABLEHLO_REDUCE_WINDOW1) Timings (microseconds): count=1 curr=334
+Memory (bytes): count=0
+1 nodes observed
+
+Subgraph (index: 2, name: STABLEHLO_REDUCE_WINDOW2) profile:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.049	    0.049	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/2
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.049	    0.049	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/2
+
+Number of nodes executed: 1
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                 ModifyGraphWithDelegate	        1	     0.049	   100.000%	   100.000%	     0.000	        1
+
+Subgraph (index: 2, name: STABLEHLO_REDUCE_WINDOW2) Timings (microseconds): count=1 curr=49
+Memory (bytes): count=0
+1 nodes observed
+
+Subgraph (index: 3, name: STABLEHLO_REDUCE_WINDOW3) profile:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.046	    0.046	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/3
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.046	    0.046	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/3
+
+Number of nodes executed: 1
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                 ModifyGraphWithDelegate	        1	     0.046	   100.000%	   100.000%	     0.000	        1
+
+Subgraph (index: 3, name: STABLEHLO_REDUCE_WINDOW3) Timings (microseconds): count=1 curr=46
+Memory (bytes): count=0
+1 nodes observed
+
+Subgraph (index: 4, name: STABLEHLO_REDUCE_WINDOW4) profile:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.037	    0.037	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/4
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 ModifyGraphWithDelegate	    0.037	    0.037	100.000%	100.000%	     0.000	        1	ModifyGraphWithDelegate/4
+
+Number of nodes executed: 1
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                 ModifyGraphWithDelegate	        1	     0.037	   100.000%	   100.000%	     0.000	        1
+
+Subgraph (index: 4, name: STABLEHLO_REDUCE_WINDOW4) Timings (microseconds): count=1 curr=37
+Memory (bytes): count=0
+1 nodes observed
+
+
+
+INFO: Operator-wise Profiling Info for Regular Benchmark Runs:
+============================== Run Order ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                 Binary Elementwise (ND)	    3.106	    3.289	  0.925%	  0.925%	     0.000	        2	Delegate/Binary Elementwise (ND):0
+	             Resize Bilinear (NHWC, F32)	    3.276	    3.639	  0.512%	  1.437%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):1
+	           Transpose (ND, X32) Transpose	    1.144	    1.584	  0.223%	  1.659%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:2
+	           Transpose (ND, X32) Transpose	    1.677	    1.362	  0.192%	  1.851%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:3
+	                 Binary Elementwise (ND)	    1.425	    1.353	  1.712%	  3.563%	     0.000	        9	Delegate/Binary Elementwise (ND):4
+	                 Binary Elementwise (ND)	    0.833	    1.009	  0.142%	  3.705%	     0.000	        1	Delegate/Binary Elementwise (ND):5
+	           Transpose (ND, X32) Transpose	    0.983	    1.691	  0.238%	  3.942%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:6
+	           Convolution (NHWC, F32) IGEMM	    1.556	    2.234	  0.628%	  4.571%	     0.000	        2	Delegate/Convolution (NHWC, F32) IGEMM:7
+	                  Unary Elementwise (NC)	    1.418	    1.256	  1.059%	  5.630%	     0.000	        6	Delegate/Unary Elementwise (NC):8
+	          Convolution (NHWC, F32) DWConv	    1.592	    1.813	  1.020%	  6.650%	     0.000	        4	Delegate/Convolution (NHWC, F32) DWConv:9
+	          Fully Connected (NC, F32) GEMM	    1.727	    1.808	  0.254%	  6.904%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:10
+	                 Binary Elementwise (ND)	    1.552	    1.337	  1.128%	  8.032%	     0.000	        6	Delegate/Binary Elementwise (ND):11
+	          Fully Connected (NC, F32) GEMM	    1.882	    2.178	  0.613%	  8.645%	     0.000	        2	Delegate/Fully Connected (NC, F32) GEMM:12
+	          Convolution (NHWC, F32) DWConv	    2.042	    2.836	  0.399%	  9.043%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:13
+	          Fully Connected (NC, F32) GEMM	    1.002	    1.706	  0.240%	  9.283%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:14
+	          Fully Connected (NC, F32) GEMM	    1.553	    1.622	  0.228%	  9.511%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:15
+	          Convolution (NHWC, F32) DWConv	    1.560	    1.683	  0.237%	  9.748%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:16
+	          Fully Connected (NC, F32) GEMM	    1.610	    1.718	  0.242%	  9.990%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:17
+	                 Binary Elementwise (ND)	    1.307	    1.246	  0.350%	 10.340%	     0.000	        2	Delegate/Binary Elementwise (ND):18
+	          Fully Connected (NC, F32) GEMM	    1.554	    1.568	  0.220%	 10.561%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:19
+	          Convolution (NHWC, F32) DWConv	    0.896	    1.213	  0.341%	 10.902%	     0.000	        2	Delegate/Convolution (NHWC, F32) DWConv:20
+	                           Sum (ND) Mean	    0.072	    0.096	  0.014%	 10.915%	     0.000	        1	Delegate/Sum (ND) Mean:21
+	                 Binary Elementwise (ND)	    0.643	    1.343	  0.189%	 11.104%	     0.000	        1	Delegate/Binary Elementwise (ND):22
+	                          Copy (NC, X32)	    0.002	    0.003	  0.000%	 11.104%	     0.000	        1	Delegate/Copy (NC, X32):23
+	Average Pooling (NHWC, F32) Average Pooling	    0.934	    1.657	  0.233%	 11.337%	     0.000	        1	Delegate/Average Pooling (NHWC, F32) Average Pooling:24
+	           Transpose (ND, X32) Transpose	    1.230	    1.236	  0.174%	 11.511%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:25
+	           Transpose (ND, X32) Transpose	    1.979	    1.219	  0.171%	 11.683%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:26
+	           Transpose (ND, X32) Transpose	    0.987	    1.362	  0.191%	 11.874%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:27
+	           Transpose (ND, X32) Transpose	    2.085	    2.091	  0.294%	 12.168%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:28
+	                           Sum (ND) Mean	   16.180	   22.084	  3.105%	 15.274%	     0.000	        1	Delegate/Sum (ND) Mean:29
+	                 Binary Elementwise (ND)	    1.417	    1.303	  0.183%	 15.457%	     0.000	        1	Delegate/Binary Elementwise (ND):30
+	                          Copy (NC, X32)	    0.001	    0.001	  0.000%	 15.457%	     0.000	        1	Delegate/Copy (NC, X32):31
+	                          Copy (NC, X32)	   36.070	   58.990	  8.295%	 23.752%	     0.000	        1	Delegate/Copy (NC, X32):32
+	                           Sum (ND) Mean	    6.283	    5.264	  0.740%	 24.492%	     0.000	        1	Delegate/Sum (ND) Mean:33
+	                 Binary Elementwise (ND)	    0.058	    0.972	  0.273%	 24.765%	     0.000	        2	Delegate/Binary Elementwise (ND):34
+	                          Copy (NC, X32)	    0.001	    0.001	  0.000%	 24.765%	     0.000	        1	Delegate/Copy (NC, X32):35
+	                          Copy (NC, X32)	   26.239	    7.495	  2.108%	 26.873%	     0.000	        2	Delegate/Copy (NC, X32):36
+	          Convolution (NHWC, F32) DWConv	    1.936	    2.327	  0.327%	 27.200%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:37
+	                 Binary Elementwise (ND)	    0.953	    1.565	  0.220%	 27.420%	     0.000	        1	Delegate/Binary Elementwise (ND):38
+	          Convolution (NHWC, F32) DWConv	    2.189	    2.689	  0.378%	 27.799%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:39
+	                 Binary Elementwise (ND)	    0.960	    1.530	  0.215%	 28.014%	     0.000	        1	Delegate/Binary Elementwise (ND):40
+	                 Binary Elementwise (ND)	    0.545	    0.938	  0.132%	 28.146%	     0.000	        1	Delegate/Binary Elementwise (ND):41
+	                               GATHER_ND	    0.032	    0.020	  0.003%	 28.148%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_4/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;5]:27
+	                 STABLEHLO_REDUCE_WINDOW	    2.610	    1.190	  0.167%	 28.316%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.decoder.RecurrentDecoder_decoder/RobustVideoMatting.model.decoder.AvgPool_avgpool/torch.nn.modules.pooling.AvgPool2d_avgpool;3]:169
+	                 STABLEHLO_REDUCE_WINDOW	    0.375	    0.393	  0.055%	 28.371%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.decoder.RecurrentDecoder_decoder/RobustVideoMatting.model.decoder.AvgPool_avgpool/torch.nn.modules.pooling.AvgPool2d_avgpool;5]:170
+	                 STABLEHLO_REDUCE_WINDOW	    0.092	    0.100	  0.014%	 28.385%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.decoder.RecurrentDecoder_decoder/RobustVideoMatting.model.decoder.AvgPool_avgpool/torch.nn.modules.pooling.AvgPool2d_avgpool;10]:173
+	                          Copy (NC, X32)	    0.004	    0.004	  0.005%	 28.390%	     0.000	        9	Delegate/Copy (NC, X32):0
+	          Fully Connected (NC, F32) GEMM	    2.088	    1.380	  1.746%	 30.136%	     0.000	        9	Delegate/Fully Connected (NC, F32) GEMM:1
+	          Fully Connected (NC, F32) GEMM	    1.365	    1.212	  1.364%	 31.500%	     0.000	        8	Delegate/Fully Connected (NC, F32) GEMM:2
+	                 Binary Elementwise (ND)	    1.234	    1.114	  1.409%	 32.909%	     0.000	        9	Delegate/Binary Elementwise (ND):3
+	          Fully Connected (NC, F32) GEMM	    1.412	    1.822	  2.050%	 34.959%	     0.000	        8	Delegate/Fully Connected (NC, F32) GEMM:5
+	          Fully Connected (NC, F32) GEMM	    1.365	    1.975	  0.833%	 35.792%	     0.000	        3	Delegate/Fully Connected (NC, F32) GEMM:6
+	          Convolution (NHWC, F32) DWConv	    1.000	    1.395	  0.196%	 35.988%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:7
+	                           Sum (ND) Mean	    0.091	    0.260	  0.037%	 36.025%	     0.000	        1	Delegate/Sum (ND) Mean:8
+	                 Binary Elementwise (ND)	    0.618	    1.136	  0.160%	 36.185%	     0.000	        1	Delegate/Binary Elementwise (ND):9
+	                          Copy (NC, X32)	    0.001	    0.004	  0.001%	 36.185%	     0.000	        1	Delegate/Copy (NC, X32):10
+	                               GATHER_ND	    0.007	    0.017	  0.002%	 36.187%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_5/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;4]:39
+	                 STABLEHLO_REDUCE_WINDOW	    0.246	    0.331	  0.047%	 36.234%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.decoder.RecurrentDecoder_decoder/RobustVideoMatting.model.decoder.AvgPool_avgpool/torch.nn.modules.pooling.AvgPool2d_avgpool;8]:172
+	                 Binary Elementwise (ND)	    0.806	    1.186	  0.834%	 37.068%	     0.000	        5	Delegate/Binary Elementwise (ND):6
+	          Fully Connected (NC, F32) GEMM	    0.782	    2.059	  1.447%	 38.515%	     0.000	        5	Delegate/Fully Connected (NC, F32) GEMM:7
+	          Convolution (NHWC, F32) DWConv	    1.552	    1.559	  0.658%	 39.173%	     0.000	        3	Delegate/Convolution (NHWC, F32) DWConv:8
+	                           Sum (ND) Mean	    0.266	    0.252	  0.035%	 39.208%	     0.000	        1	Delegate/Sum (ND) Mean:9
+	                 Binary Elementwise (ND)	    2.006	    1.268	  0.178%	 39.387%	     0.000	        1	Delegate/Binary Elementwise (ND):10
+	                          Copy (NC, X32)	    0.002	    0.004	  0.000%	 39.387%	     0.000	        1	Delegate/Copy (NC, X32):11
+	                 Binary Elementwise (ND)	    0.747	    1.191	  0.502%	 39.890%	     0.000	        3	Delegate/Binary Elementwise (ND):12
+	                               GATHER_ND	    0.010	    0.017	  0.002%	 39.892%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_6/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;2]:52
+	                  Unary Elementwise (NC)	    1.947	    1.471	  0.621%	 40.513%	     0.000	        3	Delegate/Unary Elementwise (NC):10
+	          Fully Connected (NC, F32) GEMM	    1.489	    1.232	  0.173%	 40.686%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:11
+	                  Unary Elementwise (NC)	    1.988	    0.977	  0.137%	 40.823%	     0.000	        1	Delegate/Unary Elementwise (NC):13
+	          Convolution (NHWC, F32) DWConv	    2.631	    1.077	  0.151%	 40.975%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:14
+	                  Unary Elementwise (NC)	    1.749	    0.980	  0.138%	 41.112%	     0.000	        1	Delegate/Unary Elementwise (NC):15
+	          Fully Connected (NC, F32) GEMM	    0.766	    1.084	  0.152%	 41.265%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:16
+	                 Binary Elementwise (ND)	    1.192	    1.033	  0.291%	 41.555%	     0.000	        2	Delegate/Binary Elementwise (ND):17
+	          Fully Connected (NC, F32) GEMM	    0.956	    1.250	  0.176%	 41.731%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:18
+	                  Unary Elementwise (NC)	    1.291	    0.993	  0.140%	 41.871%	     0.000	        1	Delegate/Unary Elementwise (NC):19
+	                  Unary Elementwise (NC)	    1.325	    1.083	  0.152%	 42.023%	     0.000	        1	Delegate/Unary Elementwise (NC):21
+	          Fully Connected (NC, F32) GEMM	    2.987	    1.250	  0.176%	 42.199%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:22
+	                 Binary Elementwise (ND)	    1.386	    0.990	  0.139%	 42.338%	     0.000	        1	Delegate/Binary Elementwise (ND):23
+	                             RELU_0_TO_1	    1.162	    0.969	  0.136%	 42.474%	     0.000	        1	[serving_default_output_1_output]:289
+	                             RELU_0_TO_1	    3.827	    3.096	  0.435%	 42.910%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model;4]:288
+	           Transpose (ND, X32) Transpose	    0.092	    0.182	  0.026%	 42.936%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:103
+	           Transpose (ND, X32) Transpose	    1.529	    1.119	  0.157%	 43.093%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:102
+	           Transpose (ND, X32) Transpose	    0.991	    1.278	  0.180%	 43.273%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:101
+	           Transpose (ND, X32) Transpose	    2.049	    1.946	  0.274%	 43.546%	     0.000	        1	Delegate/Transpose (ND, X32) Transpose:100
+	                 Binary Elementwise (ND)	    5.353	    4.605	  0.647%	 44.194%	     0.000	        1	Delegate/Binary Elementwise (ND):99
+	                         Slice (ND, X32)	   37.676	   23.065	  3.243%	 47.437%	     0.000	        1	Delegate/Slice (ND, X32):98
+	                         Slice (ND, X32)	   23.124	   22.326	  3.139%	 50.576%	     0.000	        1	Delegate/Slice (ND, X32):97
+	                 Binary Elementwise (ND)	    6.189	    5.946	  0.836%	 51.412%	     0.000	        1	Delegate/Binary Elementwise (ND):96
+	                 Binary Elementwise (ND)	    5.202	    5.407	  0.760%	 52.172%	     0.000	        1	Delegate/Binary Elementwise (ND):95
+	             Resize Bilinear (NHWC, F32)	    8.194	    8.725	  1.227%	 53.399%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):94
+	             Resize Bilinear (NHWC, F32)	    8.418	    8.766	  1.233%	 54.632%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):93
+	                 Binary Elementwise (ND)	    1.606	    1.409	  0.198%	 54.830%	     0.000	        1	Delegate/Binary Elementwise (ND):92
+	                 Binary Elementwise (ND)	    1.244	    1.591	  0.224%	 55.054%	     0.000	        1	Delegate/Binary Elementwise (ND):91
+	          Fully Connected (NC, F32) GEMM	    2.803	    3.856	  0.542%	 55.596%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:90
+	          Fully Connected (NC, F32) GEMM	    3.947	    4.390	  0.617%	 56.214%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:89
+	          Fully Connected (NC, F32) GEMM	    4.026	    5.441	  0.765%	 56.979%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:88
+	                          Copy (NC, X32)	   21.883	   27.018	  3.799%	 60.778%	     0.000	        1	Delegate/Copy (NC, X32):87
+	                 Binary Elementwise (ND)	    1.530	    1.422	  0.200%	 60.978%	     0.000	        1	Delegate/Binary Elementwise (ND):86
+	                 Binary Elementwise (ND)	    1.810	    1.756	  0.247%	 61.224%	     0.000	        1	Delegate/Binary Elementwise (ND):85
+	          Convolution (NHWC, F32) DWConv	    1.922	    2.160	  0.304%	 61.528%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:84
+	                 Binary Elementwise (ND)	    1.862	    1.780	  0.250%	 61.778%	     0.000	        1	Delegate/Binary Elementwise (ND):83
+	          Convolution (NHWC, F32) DWConv	    2.340	    2.131	  0.300%	 62.078%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:82
+	          Fully Connected (NC, F32) GEMM	    3.728	    3.683	  0.518%	 62.596%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:81
+	           Convolution (NHWC, F32) IGEMM	    9.430	    8.267	  1.162%	 63.758%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:80
+	           Convolution (NHWC, F32) IGEMM	   14.569	   14.009	  1.970%	 65.728%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:79
+	                          Copy (NC, X32)	   26.047	   23.434	  3.295%	 69.024%	     0.000	        1	Delegate/Copy (NC, X32):78
+	             Resize Bilinear (NHWC, F32)	    6.564	    6.830	  0.960%	 69.984%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):77
+	                          Copy (NC, X32)	    8.832	    8.016	  1.127%	 71.111%	     0.000	        1	Delegate/Copy (NC, X32):76
+	                         Slice (ND, X32)	    3.240	    3.951	  0.556%	 71.667%	     0.000	        1	Delegate/Slice (ND, X32):75
+	                 Binary Elementwise (ND)	    1.177	    1.711	  0.241%	 71.907%	     0.000	        1	Delegate/Binary Elementwise (ND):74
+	                 Binary Elementwise (ND)	    1.076	    1.711	  0.241%	 72.148%	     0.000	        1	Delegate/Binary Elementwise (ND):73
+	                 Binary Elementwise (ND)	    1.334	    1.699	  0.239%	 72.387%	     0.000	        1	Delegate/Binary Elementwise (ND):72
+	                 Binary Elementwise (ND)	    1.290	    1.721	  0.242%	 72.629%	     0.000	        1	Delegate/Binary Elementwise (ND):71
+	                  Unary Elementwise (NC)	    0.923	    1.361	  0.191%	 72.820%	     0.000	        1	Delegate/Unary Elementwise (NC):70
+	           Convolution (NHWC, F32) IGEMM	    4.251	    4.395	  0.618%	 73.438%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:69
+	                          Copy (NC, X32)	    7.545	    8.275	  1.164%	 74.602%	     0.000	        1	Delegate/Copy (NC, X32):68
+	                 Binary Elementwise (ND)	    1.244	    1.934	  0.272%	 74.874%	     0.000	        1	Delegate/Binary Elementwise (ND):67
+	                         Slice (ND, X32)	    3.762	    3.914	  0.550%	 75.424%	     0.000	        1	Delegate/Slice (ND, X32):66
+	                         Slice (ND, X32)	    2.418	    3.830	  0.539%	 75.963%	     0.000	        1	Delegate/Slice (ND, X32):65
+	                  Unary Elementwise (NC)	    2.256	    2.976	  0.419%	 76.381%	     0.000	        1	Delegate/Unary Elementwise (NC):64
+	           Convolution (NHWC, F32) IGEMM	    6.253	    6.945	  0.977%	 77.358%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:63
+	                          Copy (NC, X32)	    7.144	    8.656	  1.217%	 78.575%	     0.000	        1	Delegate/Copy (NC, X32):62
+	                         Slice (ND, X32)	    4.610	    4.123	  0.580%	 79.155%	     0.000	        1	Delegate/Slice (ND, X32):61
+	           Convolution (NHWC, F32) IGEMM	   10.561	   11.327	  1.593%	 80.747%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:60
+	                          Copy (NC, X32)	   14.395	   14.720	  2.070%	 82.817%	     0.000	        1	Delegate/Copy (NC, X32):59
+	             Resize Bilinear (NHWC, F32)	    2.340	    2.769	  0.389%	 83.207%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):58
+	                          Copy (NC, X32)	    5.324	    3.450	  0.485%	 83.692%	     0.000	        1	Delegate/Copy (NC, X32):57
+	                         Slice (ND, X32)	    1.265	    1.739	  0.244%	 83.936%	     0.000	        1	Delegate/Slice (ND, X32):56
+	                 Binary Elementwise (ND)	    0.850	    1.197	  0.168%	 84.104%	     0.000	        1	Delegate/Binary Elementwise (ND):55
+	                 Binary Elementwise (ND)	    0.732	    1.064	  0.150%	 84.254%	     0.000	        1	Delegate/Binary Elementwise (ND):54
+	                 Binary Elementwise (ND)	    0.716	    1.183	  0.166%	 84.420%	     0.000	        1	Delegate/Binary Elementwise (ND):53
+	                 Binary Elementwise (ND)	    1.061	    1.060	  0.149%	 84.570%	     0.000	        1	Delegate/Binary Elementwise (ND):52
+	                  Unary Elementwise (NC)	    1.169	    1.059	  0.149%	 84.718%	     0.000	        1	Delegate/Unary Elementwise (NC):51
+	           Convolution (NHWC, F32) IGEMM	    1.927	    2.211	  0.311%	 85.029%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:50
+	                          Copy (NC, X32)	    3.151	    3.480	  0.489%	 85.519%	     0.000	        1	Delegate/Copy (NC, X32):49
+	                 Binary Elementwise (ND)	    1.003	    1.127	  0.158%	 85.677%	     0.000	        1	Delegate/Binary Elementwise (ND):48
+	                         Slice (ND, X32)	    1.252	    1.797	  0.253%	 85.930%	     0.000	        1	Delegate/Slice (ND, X32):47
+	                         Slice (ND, X32)	    1.489	    1.672	  0.235%	 86.165%	     0.000	        1	Delegate/Slice (ND, X32):46
+	                  Unary Elementwise (NC)	    0.901	    1.147	  0.161%	 86.326%	     0.000	        1	Delegate/Unary Elementwise (NC):45
+	           Convolution (NHWC, F32) IGEMM	    2.893	    2.947	  0.414%	 86.741%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:44
+	                          Copy (NC, X32)	    2.457	    3.137	  0.441%	 87.182%	     0.000	        1	Delegate/Copy (NC, X32):43
+	                         Slice (ND, X32)	    2.983	    1.510	  0.212%	 87.394%	     0.000	        1	Delegate/Slice (ND, X32):42
+	           Convolution (NHWC, F32) IGEMM	    5.711	    6.357	  0.894%	 88.288%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:41
+	                          Copy (NC, X32)	    4.329	    6.545	  0.920%	 89.208%	     0.000	        1	Delegate/Copy (NC, X32):40
+	             Resize Bilinear (NHWC, F32)	    1.255	    1.508	  0.212%	 89.420%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):39
+	                          Copy (NC, X32)	    1.811	    2.402	  0.338%	 89.758%	     0.000	        1	Delegate/Copy (NC, X32):38
+	                         Slice (ND, X32)	    1.068	    1.236	  0.174%	 89.932%	     0.000	        1	Delegate/Slice (ND, X32):37
+	                 Binary Elementwise (ND)	    1.311	    1.047	  0.147%	 90.079%	     0.000	        1	Delegate/Binary Elementwise (ND):36
+	                 Binary Elementwise (ND)	    1.281	    1.025	  0.144%	 90.223%	     0.000	        1	Delegate/Binary Elementwise (ND):33
+	                  Unary Elementwise (NC)	    0.728	    0.997	  0.140%	 90.363%	     0.000	        1	Delegate/Unary Elementwise (NC):32
+	           Convolution (NHWC, F32) IGEMM	    1.633	    1.900	  0.267%	 90.631%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:31
+	                          Copy (NC, X32)	    2.098	    2.147	  0.302%	 90.933%	     0.000	        1	Delegate/Copy (NC, X32):30
+	                         Slice (ND, X32)	    0.770	    1.272	  0.179%	 91.111%	     0.000	        1	Delegate/Slice (ND, X32):28
+	                         Slice (ND, X32)	    0.744	    1.201	  0.169%	 91.280%	     0.000	        1	Delegate/Slice (ND, X32):27
+	                  Unary Elementwise (NC)	    0.786	    1.082	  0.152%	 91.432%	     0.000	        1	Delegate/Unary Elementwise (NC):26
+	           Convolution (NHWC, F32) IGEMM	    2.965	    2.882	  0.405%	 91.838%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:25
+	                          Copy (NC, X32)	    2.341	    2.262	  0.318%	 92.156%	     0.000	        1	Delegate/Copy (NC, X32):24
+	                         Slice (ND, X32)	    1.075	    1.067	  0.150%	 92.306%	     0.000	        1	Delegate/Slice (ND, X32):23
+	          Fully Connected (NC, F32) GEMM	    1.321	    1.115	  0.157%	 92.463%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:24
+	                  Unary Elementwise (NC)	    0.664	    0.962	  0.135%	 92.598%	     0.000	        1	Delegate/Unary Elementwise (NC):25
+	          Convolution (NHWC, F32) DWConv	    1.233	    0.969	  0.136%	 92.734%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:26
+	                  Unary Elementwise (NC)	    2.146	    0.880	  0.124%	 92.858%	     0.000	        1	Delegate/Unary Elementwise (NC):27
+	          Fully Connected (NC, F32) GEMM	    1.153	    1.030	  0.145%	 93.003%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:28
+	                 Binary Elementwise (ND)	    0.694	    0.989	  0.278%	 93.281%	     0.000	        2	Delegate/Binary Elementwise (ND):29
+	          Fully Connected (NC, F32) GEMM	    0.952	    1.448	  0.204%	 93.484%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:30
+	                  Unary Elementwise (NC)	    1.277	    0.999	  0.140%	 93.625%	     0.000	        1	Delegate/Unary Elementwise (NC):31
+	          Convolution (NHWC, F32) DWConv	    1.889	    1.138	  0.160%	 93.785%	     0.000	        1	Delegate/Convolution (NHWC, F32) DWConv:32
+	                  Unary Elementwise (NC)	    2.109	    1.085	  0.153%	 93.937%	     0.000	        1	Delegate/Unary Elementwise (NC):33
+	                           Sum (ND) Mean	    0.581	    0.584	  0.082%	 94.019%	     0.000	        1	Delegate/Sum (ND) Mean:34
+	                 Binary Elementwise (ND)	    2.512	    1.185	  0.333%	 94.353%	     0.000	        2	Delegate/Binary Elementwise (ND):35
+	                               GATHER_ND	    0.022	    0.031	  0.004%	 94.357%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_11/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;5]:91
+	                  Unary Elementwise (NC)	    1.293	    1.277	  0.359%	 94.716%	     0.000	        2	Delegate/Unary Elementwise (NC):7
+	                  Unary Elementwise (NC)	    0.825	    1.421	  0.400%	 95.116%	     0.000	        2	Delegate/Unary Elementwise (NC):9
+	                           Sum (ND) Mean	    0.869	    1.052	  0.444%	 95.560%	     0.000	        3	Delegate/Sum (ND) Mean:10
+	                          Copy (NC, X32)	    0.004	    0.588	  0.331%	 95.891%	     0.000	        4	Delegate/Copy (NC, X32):12
+	                               GATHER_ND	    0.034	    0.032	  0.004%	 95.895%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_12/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;4]:105
+	                           Sum (ND) Mean	    2.184	    1.292	  0.363%	 96.258%	     0.000	        2	Delegate/Sum (ND) Mean:11
+	                          Copy (NC, X32)	    0.009	    0.006	  0.002%	 96.260%	     0.000	        2	Delegate/Copy (NC, X32):13
+	                               GATHER_ND	    0.054	    0.033	  0.005%	 96.265%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_13/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;2]:120
+	                               GATHER_ND	    0.025	    0.035	  0.005%	 96.270%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_14/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;4]:134
+	                               GATHER_ND	    0.070	    0.032	  0.004%	 96.274%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.mobilenetv3.MobileNetV3LargeEncoder_backbone/torchvision.models.mobilenetv3.InvertedResidual_15/torch.nn.modules.container.Sequential_block/torchvision.ops.misc.SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool;2]:149
+	          Fully Connected (NC, F32) GEMM	    1.766	    2.389	  0.336%	 96.610%	     0.000	        1	Delegate/Fully Connected (NC, F32) GEMM:9
+	                               GATHER_ND	    0.068	    0.031	  0.004%	 96.615%	     0.000	        1	[wrapper.RVMWrapper/RobustVideoMatting.model.model.MattingNetwork_model/RobustVideoMatting.model.lraspp.LRASPP_aspp/torch.nn.modules.container.Sequential_aspp2/torch.nn.modules.pooling.AdaptiveAvgPool2d_0;2]:163
+	                  Unary Elementwise (NC)	    0.012	    0.005	  0.001%	 96.615%	     0.000	        1	Delegate/Unary Elementwise (NC):2
+	           Convolution (NHWC, F32) IGEMM	    5.183	    5.080	  0.714%	 97.330%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:22
+	                          Copy (NC, X32)	    4.291	    3.470	  0.488%	 97.818%	     0.000	        1	Delegate/Copy (NC, X32):21
+	             Resize Bilinear (NHWC, F32)	    1.317	    1.066	  0.150%	 97.968%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):20
+	                          Copy (NC, X32)	    1.345	    2.176	  0.306%	 98.273%	     0.000	        1	Delegate/Copy (NC, X32):19
+	                 Binary Elementwise (ND)	    0.662	    1.114	  0.157%	 98.430%	     0.000	        1	Delegate/Binary Elementwise (ND):16
+	                 Binary Elementwise (ND)	    0.663	    1.014	  0.143%	 98.573%	     0.000	        1	Delegate/Binary Elementwise (ND):15
+	                  Unary Elementwise (NC)	    0.643	    0.984	  0.138%	 98.711%	     0.000	        1	Delegate/Unary Elementwise (NC):14
+	                         Slice (ND, X32)	    0.635	    1.284	  0.181%	 98.892%	     0.000	        1	Delegate/Slice (ND, X32):4
+	                         Slice (ND, X32)	    0.737	    1.350	  0.190%	 99.082%	     0.000	        1	Delegate/Slice (ND, X32):5
+	                          Copy (NC, X32)	    1.309	    2.247	  0.316%	 99.397%	     0.000	        1	Delegate/Copy (NC, X32):6
+	                         Slice (ND, X32)	    1.242	    1.217	  0.171%	 99.569%	     0.000	        1	Delegate/Slice (ND, X32):9
+	                         Slice (ND, X32)	    0.760	    1.342	  0.189%	 99.757%	     0.000	        1	Delegate/Slice (ND, X32):10
+	           Convolution (NHWC, F32) IGEMM	    1.399	    1.726	  0.243%	100.000%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:13
+
+============================== Top by Computation Time ==============================
+	                             [node type]	  [first]	 [avg ms]	     [%]	  [cdf%]	  [mem KB]	[times called]	[Name]
+	                          Copy (NC, X32)	   36.070	   58.990	  8.295%	  8.295%	     0.000	        1	Delegate/Copy (NC, X32):32
+	                          Copy (NC, X32)	   21.883	   27.018	  3.799%	 12.094%	     0.000	        1	Delegate/Copy (NC, X32):87
+	                          Copy (NC, X32)	   26.047	   23.434	  3.295%	 15.389%	     0.000	        1	Delegate/Copy (NC, X32):78
+	                         Slice (ND, X32)	   37.676	   23.065	  3.243%	 18.632%	     0.000	        1	Delegate/Slice (ND, X32):98
+	                         Slice (ND, X32)	   23.124	   22.326	  3.139%	 21.772%	     0.000	        1	Delegate/Slice (ND, X32):97
+	                           Sum (ND) Mean	   16.180	   22.084	  3.105%	 24.877%	     0.000	        1	Delegate/Sum (ND) Mean:29
+	                          Copy (NC, X32)	   14.395	   14.720	  2.070%	 26.947%	     0.000	        1	Delegate/Copy (NC, X32):59
+	           Convolution (NHWC, F32) IGEMM	   14.569	   14.009	  1.970%	 28.917%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:79
+	           Convolution (NHWC, F32) IGEMM	   10.561	   11.327	  1.593%	 30.509%	     0.000	        1	Delegate/Convolution (NHWC, F32) IGEMM:60
+	             Resize Bilinear (NHWC, F32)	    8.418	    8.766	  1.233%	 31.742%	     0.000	        1	Delegate/Resize Bilinear (NHWC, F32):93
+
+Number of nodes executed: 197
+============================== Summary by node type ==============================
+	                             [Node type]	  [count]	  [avg ms]	    [avg %]	    [cdf %]	  [mem KB]	[times called]
+	                          Copy (NC, X32)	       26	   197.815	    27.819%	    27.819%	     0.000	       39
+	                 Binary Elementwise (ND)	       42	   110.734	    15.573%	    43.392%	     0.000	       75
+	          Fully Connected (NC, F32) GEMM	       23	    93.846	    13.198%	    56.590%	     0.000	       52
+	                         Slice (ND, X32)	       18	    77.887	    10.953%	    67.543%	     0.000	       18
+	           Convolution (NHWC, F32) IGEMM	       13	    72.510	    10.197%	    77.741%	     0.000	       14
+	                  Unary Elementwise (NC)	       20	    34.906	     4.909%	    82.650%	     0.000	       29
+	                           Sum (ND) Mean	        8	    34.280	     4.821%	    87.471%	     0.000	       11
+	             Resize Bilinear (NHWC, F32)	        7	    33.301	     4.683%	    92.154%	     0.000	        7
+	          Convolution (NHWC, F32) DWConv	       13	    32.754	     4.606%	    96.760%	     0.000	       19
+	           Transpose (ND, X32) Transpose	       11	    15.066	     2.119%	    98.879%	     0.000	       11
+	                             RELU_0_TO_1	        2	     4.064	     0.572%	    99.450%	     0.000	        2
+	                 STABLEHLO_REDUCE_WINDOW	        4	     2.012	     0.283%	    99.733%	     0.000	        4
+	Average Pooling (NHWC, F32) Average Pooling	        1	     1.657	     0.233%	    99.966%	     0.000	        1
+	                               GATHER_ND	        9	     0.239	     0.034%	   100.000%	     0.000	        9
+
+Timings (microseconds): count=50 first=696237 curr=719884 min=468997 max=832416 avg=711165 std=91271
+Memory (bytes): count=0
+197 nodes observed
+
+
+
