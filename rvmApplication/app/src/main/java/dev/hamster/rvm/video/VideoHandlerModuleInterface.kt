@@ -1,4 +1,4 @@
-package dev.hamster.rvm.interfaces
+package dev.hamster.rvm.video
 
 import android.net.Uri
 import java.io.File

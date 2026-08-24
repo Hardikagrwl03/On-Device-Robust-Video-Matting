@@ -3,13 +3,17 @@ package dev.hamster.rvm
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import dev.hamster.rvm.SharedBuffer
-import dev.hamster.rvm.modules.MattingModule
-import dev.hamster.rvm.modules.VideoHandlerModule
+import dev.hamster.rvm.matte.MatteIO
+import dev.hamster.rvm.matte.MatteModule
+import dev.hamster.rvm.matte.MatteModuleConfig
+import dev.hamster.rvm.utils.SharedBuffer
+import dev.hamster.rvm.video.VideoHandlerModule
 import java.io.File
 import java.nio.ByteOrder
 
-class RelightController(val context: Context) {
+
+
+class Controller(val context: Context) {
 
     val TAG = "RelightController"
     var inputVideoUri: Uri? = null
@@ -21,15 +25,12 @@ class RelightController(val context: Context) {
     var width: Int? = null
     var frames: Int? = null
     var fps: Int? = null
-    val mattingModule = MattingModule(context, 720, 1280)
+    val mattingModule = MatteModule(context)
     val videoHandler = VideoHandlerModule(context)
 
 
     fun loadModels(){
-        mattingModule.loadModel(
-            "rvm_resnet50_gpu.tflite",
-            useGPU = true
-        )
+        mattingModule.configure(MatteModuleConfig())
     }
 
     fun loadInputVideo(uri: Uri){
@@ -89,7 +90,7 @@ class RelightController(val context: Context) {
             videoHandler.getNextFrame(inputFrameBuffer)
             inputFrameBuffer.rewind()
 
-            mattingModule.getMatte(inputFrameBuffer, outputFgrBuffer, outputMatteBuffer)
+            mattingModule.run(MatteIO(inputFrameBuffer, outputFgrBuffer, outputMatteBuffer), count = 1)
             outputMatteBuffer.rewind()
 
             videoHandler.putNextFrame(outputMatteBuffer, channels = 1, scale = 255.0f)
@@ -128,7 +129,7 @@ class RelightController(val context: Context) {
             videoHandler.getNextFrame(inputFrameBuffer)
             inputFrameBuffer.rewind()
 
-            mattingModule.getMatte(inputFrameBuffer, outputFgrBuffer, outputMatteBuffer)
+            mattingModule.run(MatteIO(inputFrameBuffer, outputFgrBuffer, outputMatteBuffer), count = 1)
             outputMatteBuffer.rewind()
 
             videoHandler.putNextFrame(outputFgrBuffer, channels = 3)

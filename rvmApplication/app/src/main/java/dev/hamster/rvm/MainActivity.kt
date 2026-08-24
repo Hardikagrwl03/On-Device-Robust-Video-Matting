@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var btnReset: Button
     private lateinit var statusText: TextView
     private var selectedVideoUri: Uri? = null
-    private val relightController = RelightController(this)
+    private val controller = Controller(this)
 
     private val pickVideo =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         setupViews()
-        relightController.loadModels()
+        controller.loadModels()
 
     }
 
@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
 
     private fun onVideoSelected(uri: Uri) {
         selectedVideoUri = uri
-        relightController.loadInputVideo(uri)
+        controller.loadInputVideo(uri)
         playVideo(inputVideoView, uri)
         outputVideoView.stopPlayback()
         statusText.text = ""
@@ -104,7 +104,6 @@ class MainActivity : ComponentActivity() {
         inputVideoView.stopPlayback()
         outputVideoView.stopPlayback()
         statusText.text = ""
-//        relightController.reset()
     }
 
     private fun playVideo(videoView: VideoView, uri: Uri) {
@@ -152,7 +151,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun relightVideo(): Uri {
         Log.d("GID_Debug", "relightVideo: relighting video with uri - $selectedVideoUri ")
-        val uri = relightController.matteVideo()
+        val uri = controller.matteVideo()
         return uri
     }
 }

@@ -1,4 +1,4 @@
-package dev.hamster.rvm.modules
+package dev.hamster.rvm.video
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,8 +10,6 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaMuxer
 import android.net.Uri
 import android.util.Log
-import dev.hamster.rvm.Utils
-import dev.hamster.rvm.interfaces.VideoHandlerModuleInterface
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import java.io.File
@@ -226,7 +224,7 @@ class VideoHandlerModule(val context: Context): VideoHandlerModuleInterface {
         var uvIndex = width!! * height!!
         val floatArray = FloatArray(floatBuffer.capacity())
         floatBuffer.get(floatArray, 0, height!!*width!!*channels)
-        Log.d(Utils.TAG, "tensorBufferToNV21: FLoat Value decoding ${floatArray.asList()}")
+        Log.d(TAG, "tensorBufferToNV21: FLoat Value decoding ${floatArray.asList()}")
         var index = 0
         when(channels){
             1->{
