@@ -86,17 +86,23 @@ curl -L -o RobustVideoMatting/checkpoints/rvm_resnet50.pth \
 
 ### 3. Android device (optional, for benchmarking only)
 
-`benchmark/binary/benchmark_model` is a prebuilt **arm64-v8a** TFLite
-benchmark binary. You'll need `adb` on `PATH` and at least one Android
-device reachable:
+`benchmark/binary/` ships prebuilt TFLite `benchmark_model` binaries for two
+ABIs (`android_aarch64_benchmark_model` for `arm64-v8a`,
+`android_arm_benchmark_model` for `armeabi-v7a`/`armeabi`) — built per the
+official LiteRT guide on [implementing/building a delegate and its benchmark
+tooling](https://developers.google.com/edge/litert/performance/implementing_delegate).
+`benchmark_cpu.sh`/`benchmark_gpu.sh` detect the connected device's ABI and
+push the matching one automatically. You'll need `adb` on `PATH` and at
+least one Android device reachable:
 
 ```bash
 adb devices -l
 ```
 
-A 32-bit-only (`armeabi-v7a`) device can't run this binary at all — it fails
-with a plain `No such file or directory`, which is an ABI mismatch, not a
-bug. Check with `adb shell getprop ro.product.cpu.abilist`.
+A device with neither ABI (rare — some x86 emulators) can't run either
+binary; the scripts detect this via `adb shell getprop ro.product.cpu.abi`
+and abort with an explicit "Unsupported device architecture" error rather
+than failing unhelpfully at push/exec time.
 
 ## File structure
 
@@ -117,7 +123,7 @@ rvmConverter/
 ├── benchmark/                    # on-device CPU/GPU benchmarking via adb
 │   ├── benchmark_cpu.sh
 │   ├── benchmark_gpu.sh
-│   ├── binary/benchmark_model    # prebuilt arm64-v8a TFLite benchmark tool
+│   ├── binary/                   # prebuilt per-ABI TFLite benchmark tools (see Setup step 3)
 │   └── <original|gpu>/<cpu|gpu>/*.log   # generated logs, gitignored
 ├── tflite_models/                # convert.py's output, gitignored
 │   └── <original|gpu>/*.tflite
@@ -255,7 +261,10 @@ every fix made so far reports `max_diff=0.000000`.
 ./benchmark/benchmark_gpu.sh <model.tflite> [device_name_or_id]
 ```
 
-Pushes `benchmark/binary/benchmark_model` and the given `.tflite` to
+Queries the device's ABI (`adb shell getprop ro.product.cpu.abi`) to pick the
+matching binary from `benchmark/binary/` (see [Setup step
+3](#3-android-device-optional-for-benchmarking-only) for where these come
+from), then pushes it and the given `.tflite` to
 `/data/local/tmp/rvm_benchmark/` on the device via `adb` (`-s <device>` only
 if a device is given) and runs it — `benchmark_cpu.sh` with
 `--num_threads=10`, `benchmark_gpu.sh` with `--use_gpu=true` — both with
@@ -367,8 +376,15 @@ operational detail than this README:
 ## Gotchas
 
 - Never edit `RobustVideoMatting/model/*.py` — only `model_gpu/*.py`.
-- `benchmark/binary/benchmark_model` is arm64-v8a only; it fails silently
-  and unhelpfully (`No such file or directory`) on a 32-bit-only device.
+- `benchmark/binary/` holds one prebuilt `benchmark_model` per ABI
+  (`arm64-v8a`, `armeabi-v7a`/`armeabi`) — see [Setup step
+  3](#3-android-device-optional-for-benchmarking-only) for how they were
+  built and the [LiteRT delegate-implementation
+  guide](https://developers.google.com/edge/litert/performance/implementing_delegate)
+  they follow. `benchmark_cpu.sh`/`benchmark_gpu.sh` auto-detect the device's
+  ABI and push the right one; a device on neither ABI gets an explicit
+  "Unsupported device architecture" error instead of a confusing push/exec
+  failure.
 - `--downsample-ratio 1.0` (the default) skips RVM's refiner branch
   entirely — the traced graph runs the full backbone/decoder at full
   resolution. A ratio `< 1` traces the refiner branch too, which is a

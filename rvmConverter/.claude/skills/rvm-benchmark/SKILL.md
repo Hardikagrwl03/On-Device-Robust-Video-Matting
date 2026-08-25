@@ -5,9 +5,13 @@ description: Benchmark a .tflite model's inference speed and delegate coverage o
 
 # Benchmarking a .tflite model on-device
 
-Uses the prebuilt TFLite `benchmark_model` tool (`benchmark/binary/benchmark_model`,
-arm64-v8a) over `adb`. Needs a device connected (see `rvm-setup`). Prefer the
-wrapper script:
+Uses the prebuilt TFLite `benchmark_model` tool over `adb`. `benchmark/binary/`
+ships one binary per ABI (`android_aarch64_benchmark_model` for arm64-v8a,
+`android_arm_benchmark_model` for armeabi-v7a/armeabi); both scripts query the
+connected device's ABI via `adb shell getprop ro.product.cpu.abi` and push the
+matching one automatically, so you don't need to pick it yourself. An
+unrecognized ABI aborts with an error rather than pushing a binary that won't
+exec. Needs a device connected (see `rvm-setup`). Prefer the wrapper script:
 
 ```bash
 ./scripts/benchmark.sh <cpu|gpu> <model.tflite> [device_name_or_id]
