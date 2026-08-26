@@ -1,6 +1,6 @@
 package dev.hamster.rvm.interfaces
 
-import dev.hamster.rvm.utils.RuntimeConfig
+import dev.hamster.rvm.modelRunner.RuntimeConfig
 
 /**
  * Contract every module-specific config (e.g. MatteModuleConfig) must satisfy.
@@ -10,7 +10,7 @@ import dev.hamster.rvm.utils.RuntimeConfig
  * [RuntimeConfig] so the module's underlying TFLiteModelRunner can be configured with it.
  * This is the minimal shape [ModuleInterface] relies on to stay generic across modules.
  */
-interface ModuleConfigInterface {
+interface ConfigInterface {
     val height: Int
     val width: Int
 

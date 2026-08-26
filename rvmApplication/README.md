@@ -55,11 +55,11 @@ app/src/main/java/dev/hamster/rvm/
 ├── Controller.kt                # Orchestrates VideoHandlerModule + MatteModule to process a video end-to-end
 ├── interfaces/                  # Generic contracts every inference module implements
 │   ├── ModuleInterface.kt       #   configure/run/reset/close, generic over a module's Config and IO types
-│   ├── ModuleConfigInterface.kt #   minimal shape every module config resolves to (height, width, RuntimeConfig)
+│   ├── ConfigInterface.kt #   minimal shape every module config resolves to (height, width, RuntimeConfig)
 │   └── HiddenStatesInterface.kt #   contract for a module's recurrent/hidden-state buffers
 ├── matte/                       # RVM matting module (implements the interfaces above)
 │   ├── MatteModule.kt           #   runs the RVM model; also defines MatteIO (its named input/output buffers)
-│   ├── MatteModuleConfig.kt     #   resolution/backbone/dtype/downsample settings; derives the model filename
+│   ├── MatteConfig.kt     #   resolution/backbone/dtype/downsample settings; derives the model filename
 │   └── MatteHiddenStates.kt     #   the 4 ConvGRU recurrent state buffers RVM passes between frames
 ├── video/                       # Video decode/encode module
 │   ├── VideoHandlerModule.kt    #   MediaCodec-based frame extraction and video re-encoding

@@ -1,17 +1,17 @@
 package dev.hamster.rvm.matte
 
-import dev.hamster.rvm.utils.RuntimeConfig
-import dev.hamster.rvm.interfaces.ModuleConfigInterface
+import dev.hamster.rvm.modelRunner.RuntimeConfig
+import dev.hamster.rvm.interfaces.ConfigInterface
 
-/** Matte-specific implementation of [ModuleConfigInterface]; resolves to a [RuntimeConfig] naming the RVM model to load. */
-data class MatteModuleConfig(
+/** Matte-specific implementation of [ConfigInterface]; resolves to a [RuntimeConfig] naming the RVM model to load. */
+data class MatteConfig(
     override var height: Int = 720,
     override var width: Int = 1280,
     override var runtimeConfig: RuntimeConfig = RuntimeConfig(""),
     var dtype: Dtype = Dtype.FLOAT32,
     var variant: Variant = Variant.RESNET50,
     var downsampleRatio: Float = 1.0F
-) : ModuleConfigInterface {
+) : ConfigInterface {
     enum class Variant(id: Int, val backbone: String, val channels: IntArray){
         RESNET50(0, "resnet50", intArrayOf(16, 32, 64, 128)),
         MOBILENETv3(1, "mobilenetv3", intArrayOf(16, 20, 40, 64))

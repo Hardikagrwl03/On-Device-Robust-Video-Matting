@@ -2,36 +2,30 @@ package dev.hamster.rvm.matte
 
 import android.content.Context
 import android.util.Log
-import dev.hamster.rvm.utils.TFLiteModelRunner
+import dev.hamster.rvm.modelRunner.TFLiteModelRunner
 import dev.hamster.rvm.interfaces.HiddenStatesInterface
 import dev.hamster.rvm.interfaces.ModuleInterface
 import java.nio.ByteBuffer
 
-/** MatteModule's [dev.hamster.rvm.interfaces.ModuleInterface] IO: named buffers instead of positional ones so call sites read clearly. */
-data class MatteIO(
-    val inputImage: ByteBuffer,
-    val outputForeground: ByteBuffer,
-    val outputAlphaMatte: ByteBuffer
-)
-
 /** Matte-specific implementation of [ModuleInterface]: runs the RVM matting model and carries its hidden states between frames. */
 class MatteModule(
     context: Context
-) : ModuleInterface<MatteModuleConfig, MatteIO> {
+) : ModuleInterface<MatteConfig, MatteIO> {
     companion object {
         const val TAG = "MatteModule"
     }
     private val matteModel = TFLiteModelRunner(context)
     private lateinit var hiddenStates: HiddenStatesInterface
-    private lateinit var config: MatteModuleConfig
+    private lateinit var config: MatteConfig
     private val rvmInput = arrayOfNulls<ByteBuffer>(5)
     private val rvmOutput = mutableMapOf<Int, ByteBuffer>()
 
-    override fun configure(newConfig: MatteModuleConfig){
+    override fun configure(newConfig: MatteConfig){
         if(!::config.isInitialized){
             config = newConfig
             matteModel.configure(config.runtimeConfig)
             initializeHiddenStates()
+            matteModel.logSignature()
             Log.d(TAG, "configure: Matte Module configured with:\nResolution: ${config.height}x${config.width}\nVariant: ${config.variant}\nDownsampleRatio: ${config.downsampleRatio}")
             return
         }
@@ -49,6 +43,7 @@ class MatteModule(
             initializeHiddenStates()
         }
         matteModel.configure(config.runtimeConfig)
+        matteModel.logSignature()
         Log.d(TAG, "configure: Matte Module configured with:\nResolution: ${config.height}x${config.width}\nVariant: ${config.variant}\nDownsampleRatio: ${config.downsampleRatio}")
     }
 

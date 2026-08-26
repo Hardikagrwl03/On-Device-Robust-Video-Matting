@@ -44,6 +44,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.google.material)
     implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
     implementation("com.google.ai.edge.litert:litert:1.4.0")
     implementation("com.google.ai.edge.litert:litert-gpu:1.4.0")
