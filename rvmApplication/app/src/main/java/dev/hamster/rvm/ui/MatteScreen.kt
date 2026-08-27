@@ -1,39 +1,61 @@
 package dev.hamster.rvm.ui
 
 import android.app.Activity
-import android.net.Uri
 import android.view.WindowManager
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
 import android.widget.Toast
-import android.widget.VideoView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -45,30 +67,62 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.media3.exoplayer.ExoPlayer
 import dev.hamster.rvm.R
 import dev.hamster.rvm.matte.MatteConfig
+import dev.hamster.rvm.ui.player.VideoSurface
+import dev.hamster.rvm.ui.player.rememberDualVideoSync
+import dev.hamster.rvm.ui.theme.RvmOnVideoPlate
+import dev.hamster.rvm.ui.theme.RvmVideoPlate
+import dev.hamster.rvm.ui.theme.RvmVideoScrimAlpha
+import kotlinx.coroutines.delay
 
 /**
- * The app's single screen: a title bar, the input/output video previews, and the primary
- * action buttons. Configuration UI and progress/run behaviour are layered on in later phases;
- * this only lays out the structure and wires video selection through to [viewModel].
+ * The app's matting screen: a configure pill, the input/output video previews, a fixed status
+ * strip, and the bottom action bar (Import / Matte / Reset). Laid out to fit in one screen with
+ * no scrolling.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MatteScreen(viewModel: MatteViewModel) {
+fun MatteScreen(viewModel: MatteViewModel, onNavigateBack: () -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showConfigSheet by remember { mutableStateOf(false) }
     var showResetConfirm by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val isRunning = uiState.stage == MatteUiState.Stage.RUNNING
+    val sync = rememberDualVideoSync()
+
+    LaunchedEffect(uiState.selectedVideoUri) { sync.setInputUri(uiState.selectedVideoUri) }
+    LaunchedEffect(uiState.activeOutputUri) { sync.setOutputUri(uiState.activeOutputUri) }
+
+    LaunchedEffect(sync.isPlaying) {
+        while (sync.isPlaying) {
+            sync.correctDrift()
+            delay(150)
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, sync) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                sync.inputPlayer.pause()
+                sync.outputPlayer.pause()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     val pickVideo = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -95,9 +149,32 @@ fun MatteScreen(viewModel: MatteViewModel) {
         }
     }
 
+    LaunchedEffect(uiState.transientMessage) {
+        uiState.transientMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.consumeTransientMessage()
+        }
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.app_name)) })
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            MatteActionBar(
+                isRunning = isRunning,
+                canRun = uiState.selectedVideoUri != null,
+                onImport = { pickVideo.launch("video/*") },
+                onRunOrCancel = { if (isRunning) viewModel.cancel() else viewModel.runMatting() },
+                onReset = { if (isRunning) showResetConfirm = true else viewModel.reset() }
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
@@ -105,100 +182,56 @@ fun MatteScreen(viewModel: MatteViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(stringResource(R.string.input_video_label), style = MaterialTheme.typography.titleMedium)
-            VideoPlayer(
-                uri = uiState.selectedVideoUri,
-                contentDescription = stringResource(R.string.input_video_label),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-            )
+            ConfigButton(config = uiState.config, onClick = { showConfigSheet = true })
 
-            Text(stringResource(R.string.output_video_label), style = MaterialTheme.typography.titleMedium)
-            VideoPlayer(
-                uri = uiState.outputVideoUri,
-                contentDescription = stringResource(R.string.output_video_label),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-            )
-            if (uiState.stage == MatteUiState.Stage.DONE && uiState.elapsedMs != null && uiState.totalFrames > 0) {
-                Text(
-                    text = stringResource(
-                        R.string.completion_stats,
-                        uiState.elapsedMs!! / 1000f,
-                        uiState.elapsedMs!! / uiState.totalFrames
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            PreviewFrame(
+                label = stringResource(R.string.input_video_label),
+                player = if (sync.hasInput) sync.inputPlayer else null,
+                aspectRatio = sync.inputAspect,
+                modifier = Modifier.weight(1f)
+            ) {
+                FilledTonalIconButton(
+                    onClick = { sync.togglePlayPause() },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp)
+                        .size(40.dp)
+                ) {
+                    Icon(
+                        if (sync.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = stringResource(if (sync.isPlaying) R.string.pause else R.string.play),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            if (uiState.outputMatteVideoUri != null) {
+                OutputBar(
+                    uiState = uiState,
+                    onSelect = { viewModel.selectOutput(it) },
+                    onSave = { viewModel.saveOutputs() },
+                    isRunning = isRunning,
+                    modifier = Modifier.fillMaxWidth().height(40.dp)
                 )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = { pickVideo.launch("video/*") },
-                    modifier = Modifier.weight(1f)
+                val outputLabel = stringResource(R.string.output_video_label)
+                Crossfade(
+                    targetState = uiState.outputSelection,
+                    modifier = Modifier.weight(1f),
+                    label = "output-selection"
                 ) {
-                    Text(stringResource(R.string.select_video))
-                }
-                if (isRunning) {
-                    Button(
-                        onClick = { viewModel.cancel() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                } else {
-                    Button(
-                        onClick = { viewModel.runMatting() },
-                        enabled = uiState.selectedVideoUri != null,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(stringResource(R.string.relight))
-                    }
-                }
-                OutlinedButton(
-                    onClick = { if (isRunning) showResetConfirm = true else viewModel.reset() },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(stringResource(R.string.reset))
-                }
-            }
-
-            if (isRunning) {
-                val total = uiState.totalFrames
-                val processed = uiState.processedFrames
-                val progress = if (total > 0) processed.toFloat() / total.toFloat() else 0f
-                val percent = if (total > 0) processed * 100 / total else 0
-
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Text(
-                        text = stringResource(R.string.progress_caption, processed, total, percent),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    PreviewFrame(
+                        label = outputLabel,
+                        player = if (sync.hasOutput) sync.outputPlayer else null,
+                        aspectRatio = sync.outputAspect,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
             }
 
-            ConfigCard(config = uiState.config, modifier = Modifier.fillMaxWidth())
-
-            OutlinedButton(
-                onClick = { showConfigSheet = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.configure))
-            }
+            StatusStrip(uiState = uiState, modifier = Modifier.fillMaxWidth().height(28.dp))
         }
     }
 
@@ -206,7 +239,10 @@ fun MatteScreen(viewModel: MatteViewModel) {
         visible = showConfigSheet,
         config = uiState.config,
         isRunning = isRunning,
-        onApply = { viewModel.updateConfig(it) },
+        onApply = {
+            viewModel.updateConfig(it)
+            Toast.makeText(context, R.string.config_applied, Toast.LENGTH_SHORT).show()
+        },
         onDismiss = { showConfigSheet = false }
     )
 
@@ -233,67 +269,276 @@ fun MatteScreen(viewModel: MatteViewModel) {
 }
 
 /**
- * A quiet summary card of the currently active [config] — everything the config sheet edits,
- * plus the resolved model filename that actually gets loaded. Recomposes automatically whenever
- * [MatteViewModel.updateConfig] pushes a new config into [MatteUiState.config], so it always
- * reflects what was last applied without any extra plumbing.
+ * The configure affordance: a full-width tonal pill showing the live config summary, replacing
+ * both the old [MatteConfig] summary card and the separate full-width "Configure" button.
  */
 @Composable
-fun ConfigCard(config: MatteConfig, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+private fun ConfigButton(config: MatteConfig, onClick: () -> Unit) {
+    val summary = stringResource(
+        R.string.config_summary,
+        config.variant.backbone,
+        config.height,
+        downsampleDisplay(
+            config,
+            autoFormat = stringResource(R.string.downsample_auto_ratio_format),
+            percentFormat = stringResource(R.string.downsample_percent_format)
+        ),
+        config.runtimeConfig.device.name,
+        config.runtimeConfig.numThreads
+    )
+    val configureContentDescription = stringResource(R.string.configure_content_description)
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp)
+            .semantics { contentDescription = configureContentDescription }
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ConfigRow(stringResource(R.string.compute_device_label), config.runtimeConfig.device.name)
-            ConfigRow(stringResource(R.string.resolution_label), "${config.height} × ${config.width}")
-            ConfigRow(stringResource(R.string.backbone_label), config.variant.backbone)
-            ConfigRow(
-                stringResource(R.string.downsample_ratio_label),
-                downsampleDisplay(
-                    config,
-                    autoFormat = stringResource(R.string.downsample_auto_ratio_format),
-                    percentFormat = stringResource(R.string.downsample_percent_format)
-                )
+            Icon(
+                Icons.Filled.Tune,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
             )
-            ConfigRow(stringResource(R.string.dtype_label), config.dtype.name)
-            ConfigRow(stringResource(R.string.threads_value_label), config.runtimeConfig.numThreads.toString())
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
+            Text(stringResource(R.string.configure_label), style = MaterialTheme.typography.labelLarge)
             Text(
-                text = stringResource(R.string.model_file_label),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                summary,
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalContentColor.current.copy(alpha = 0.8f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
             )
-            Text(
-                text = config.runtimeConfig.modelFileName,
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(20.dp))
         }
     }
 }
 
+/** Matte/Foreground segmented switcher, plus a Save button once output exists to save. */
 @Composable
-private fun ConfigRow(label: String, value: String) {
+private fun OutputBar(
+    uiState: MatteUiState,
+    onSelect: (MatteUiState.OutputKind) -> Unit,
+    onSave: () -> Unit,
+    isRunning: Boolean,
+    modifier: Modifier = Modifier
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        val kinds = MatteUiState.OutputKind.entries
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier.weight(1f).fillMaxHeight()
+        ) {
+            kinds.forEachIndexed { index, kind ->
+                SegmentedButton(
+                    selected = uiState.outputSelection == kind,
+                    onClick = { onSelect(kind) },
+                    shape = SegmentedButtonDefaults.itemShape(index, kinds.size)
+                ) {
+                    Text(
+                        stringResource(
+                            if (kind == MatteUiState.OutputKind.MATTE) R.string.output_matte else R.string.output_foreground
+                        )
+                    )
+                }
+            }
+        }
+
+        FilledTonalButton(
+            onClick = onSave,
+            enabled = !uiState.isSaving && !isRunning,
+            modifier = Modifier.fillMaxHeight(),
+            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+        ) {
+            if (uiState.isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                    strokeWidth = 2.dp,
+                    color = LocalContentColor.current
+                )
+            } else {
+                Icon(Icons.Filled.Save, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+            }
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+            Text(stringResource(R.string.action_save), maxLines = 1)
+        }
+    }
+}
+
+/**
+ * A rounded, near-black preview surface holding a [VideoSurface] with a small overlay label chip,
+ * plus an optional overlay (e.g. a transport control) drawn on top.
+ */
+@Composable
+private fun PreviewFrame(
+    label: String,
+    player: ExoPlayer?,
+    aspectRatio: Float,
+    modifier: Modifier = Modifier,
+    overlay: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit = {}
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(RvmVideoPlate)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.large)
+    ) {
+        VideoSurface(
+            player = player,
+            aspectRatio = aspectRatio,
+            contentDescription = label,
+            modifier = Modifier.fillMaxSize()
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Surface(
+            shape = CircleShape,
+            color = RvmVideoPlate.copy(alpha = RvmVideoScrimAlpha),
+            contentColor = RvmOnVideoPlate,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+            )
+        }
+        overlay()
+    }
+}
+
+/** A fixed-height status slot: progress while running, stats when done, hints otherwise. */
+@Composable
+private fun StatusStrip(uiState: MatteUiState, modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+        AnimatedContent(targetState = uiState.stage, label = "status-strip") { stage ->
+        when (stage) {
+            MatteUiState.Stage.RUNNING -> {
+                val total = uiState.totalFrames
+                val processed = uiState.processedFrames
+                val progress = if (total > 0) processed.toFloat() / total.toFloat() else 0f
+                val percent = if (total > 0) processed * 100 / total else 0
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                    Text(
+                        text = stringResource(R.string.progress_caption, processed, total, percent),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            MatteUiState.Stage.DONE -> {
+                if (uiState.elapsedMs != null && uiState.totalFrames > 0) {
+                    Text(
+                        text = stringResource(
+                            R.string.completion_stats,
+                            uiState.elapsedMs / 1000f,
+                            uiState.elapsedMs / uiState.totalFrames
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            MatteUiState.Stage.ERROR -> {
+                Text(
+                    text = uiState.errorMessage ?: "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            else -> {
+                val hint = if (uiState.selectedVideoUri == null) {
+                    stringResource(R.string.status_idle_hint)
+                } else {
+                    stringResource(R.string.status_ready_hint)
+                }
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        }
+    }
+}
+
+/** Bottom action bar: Import / Matte (or Cancel while running) / Reset. */
+@Composable
+private fun MatteActionBar(
+    isRunning: Boolean,
+    canRun: Boolean,
+    onImport: () -> Unit,
+    onRunOrCancel: () -> Unit,
+    onReset: () -> Unit
+) {
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 3.dp) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilledTonalButton(
+                onClick = onImport,
+                enabled = !isRunning,
+                modifier = Modifier.weight(1f).height(48.dp),
+                contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+            ) {
+                Icon(Icons.Filled.VideoLibrary, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                Text(stringResource(R.string.action_import), maxLines = 1)
+            }
+
+            if (isRunning) {
+                FilledTonalButton(
+                    onClick = onRunOrCancel,
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+                ) {
+                    Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.cancel), maxLines = 1)
+                }
+            } else {
+                Button(
+                    onClick = onRunOrCancel,
+                    enabled = canRun,
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+                ) {
+                    Icon(Icons.Filled.AutoAwesome, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.action_matte), maxLines = 1)
+                }
+            }
+
+            OutlinedButton(
+                onClick = onReset,
+                modifier = Modifier.weight(1f).height(48.dp),
+                contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+            ) {
+                Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                Text(stringResource(R.string.reset), maxLines = 1)
+            }
+        }
     }
 }
 
@@ -309,64 +554,4 @@ private fun downsampleDisplay(config: MatteConfig, autoFormat: String, percentFo
     } else {
         percentFormat.format((config.downsampleRatio * 100).toInt())
     }
-}
-
-/**
- * Plays [uri] in a [VideoView] wrapped for Compose, or shows a placeholder surface when there's
- * nothing selected yet. Preserves two behaviours from the original XML screen: `setZOrderOnTop`
- * (a `VideoView` is backed by a `SurfaceView`, which otherwise composites behind the window and
- * renders as black), and fitting the video's aspect ratio inside the allotted box rather than
- * stretching it.
- */
-@Composable
-fun VideoPlayer(uri: Uri?, contentDescription: String, modifier: Modifier = Modifier) {
-    if (uri == null) {
-        Box(
-            modifier = modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .semantics { this.contentDescription = contentDescription },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.no_video_selected),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        return
-    }
-
-    AndroidView(
-        modifier = modifier.semantics { this.contentDescription = contentDescription },
-        factory = { context ->
-            VideoView(context).apply {
-                setZOrderOnTop(true)
-            }
-        },
-        update = { videoView ->
-            videoView.setVideoURI(uri)
-            videoView.setOnPreparedListener { mediaPlayer ->
-                val videoProportion = mediaPlayer.videoWidth.toFloat() / mediaPlayer.videoHeight.toFloat()
-
-                val parentWidth = videoView.width
-                val parentHeight = videoView.height
-                val screenProportion = parentWidth.toFloat() / parentHeight.toFloat()
-
-                val layoutParams = videoView.layoutParams
-                if (videoProportion > screenProportion) {
-                    // Video is wider than the view
-                    layoutParams.width = parentWidth
-                    layoutParams.height = (parentWidth / videoProportion).toInt()
-                } else {
-                    // Video is taller than the view
-                    layoutParams.width = (videoProportion * parentHeight).toInt()
-                    layoutParams.height = parentHeight
-                }
-                videoView.layoutParams = layoutParams
-
-                mediaPlayer.isLooping = true
-                videoView.start()
-            }
-        }
-    )
 }

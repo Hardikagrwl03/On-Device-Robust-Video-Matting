@@ -22,8 +22,11 @@ class Controller(val context: Context) {
         const val TAG = "Controller"
     }
     var inputVideoUri: Uri? = null
-    var outputVideoUri: Uri? = null
     var outputFgrVideoUri: Uri? = null
+    var outputMatteFile: File? = null
+        private set
+    var outputFgrFile: File? = null
+        private set
     var height: Int? = null
     var width: Int? = null
     var frames: Int? = null
@@ -55,32 +58,6 @@ class Controller(val context: Context) {
         frames = videoDecoder.getFrameCount()
     }
 
-    fun testVideoHandler(count: Int = 1){
-        val dummyFrameBuffer: SharedBuffer = SharedBuffer(count*height!!* width!!*3*4)
-        val buf = dummyFrameBuffer.buffer
-        videoDecoder.getNextFrames(buf, count)
-        buf.rewind()
-        buf.limit(buf.capacity())
-        matteEncoder.putNextFrames(buf, count)
-        buf.rewind()
-    }
-
-    fun testVideoHandler(): Uri{
-        val videoFile = File(context.getExternalFilesDir(null), "test.mp4")
-        matteEncoder.startVideoEncoder(videoFile, width!!, height!!, videoDecoder.getFps(), videoDecoder.getBitrate())
-        val dummyFrameBuffer: SharedBuffer = SharedBuffer(height!!* width!!*3*4)
-        val buf = dummyFrameBuffer.buffer
-        for(i in 0 until frames!!){
-            videoDecoder.getNextFrame(buf)
-            buf.rewind()
-            matteEncoder.putNextFrame(buf)
-            buf.rewind()
-        }
-        matteEncoder.saveVideo()
-        outputVideoUri = Uri.fromFile(videoFile)
-        return outputVideoUri!!
-    }
-
     /**
      * Runs matting over the loaded video in a single decode/inference pass, writing the alpha
      * matte and the foreground into two separate videos at once (rather than decoding and
@@ -91,8 +68,10 @@ class Controller(val context: Context) {
     suspend fun matteVideo(onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }): Uri = withContext(Dispatchers.Default) {
         mattingModule.reset()
 
-        val matteFile = File(context.getExternalFilesDir(null), "alphamatte.mp4")
-        val fgrFile = File(context.getExternalFilesDir(null), "fgr.mp4")
+        val runDir = prepareRunDir()
+        val stamp = System.currentTimeMillis()
+        val matteFile = File(runDir, "matte_$stamp.mp4")
+        val fgrFile = File(runDir, "fgr_$stamp.mp4")
         matteEncoder.startVideoEncoder(matteFile, config.width, config.height, videoDecoder.getFps(), videoDecoder.getBitrate())
         fgrEncoder.startVideoEncoder(fgrFile, config.width, config.height, videoDecoder.getFps(), videoDecoder.getBitrate())
 
@@ -134,12 +113,28 @@ class Controller(val context: Context) {
         matteEncoder.saveVideo()
         fgrEncoder.saveVideo()
 
+        outputMatteFile = matteFile
+        outputFgrFile = fgrFile
         outputFgrVideoUri = Uri.fromFile(fgrFile)
         Uri.fromFile(matteFile)
     }
 
+    private fun prepareRunDir(): File {
+        val dir = File(context.cacheDir, "rvm_runs")
+        if (dir.exists()) {
+            dir.listFiles()?.forEach { it.delete() }
+        } else {
+            dir.mkdirs()
+        }
+        return dir
+    }
+
     fun reset(){
         mattingModule.reset()
+        File(context.cacheDir, "rvm_runs").listFiles()?.forEach { it.delete() }
+        outputMatteFile = null
+        outputFgrFile = null
+        outputFgrVideoUri = null
     }
 
     fun close(){

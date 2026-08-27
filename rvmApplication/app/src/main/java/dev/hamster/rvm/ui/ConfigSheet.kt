@@ -11,6 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -99,7 +100,11 @@ fun ConfigSheet(
                 numThreads = config.runtimeConfig.numThreads,
                 resolution = config.height to config.width,
                 backbone = config.variant.backbone,
-                downsampleTag = if (config.downsampleRatio == -1.0F) "auto" else (config.downsampleRatio * 100).toInt().toString()
+                downsampleTag = if (config.runtimeConfig.modelFileName.contains("_ds_auto")) {
+                    "auto"
+                } else {
+                    (config.downsampleRatio * 100).toInt().toString()
+                }
             )
         )
     }
@@ -189,6 +194,21 @@ fun ConfigSheet(
                     onValueChange = { draft = draft.copy(numThreads = it.roundToInt()) },
                     valueRange = 1f..8f,
                     steps = 6
+                )
+            }
+
+            HorizontalDivider()
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    stringResource(R.string.model_file_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    config.runtimeConfig.modelFileName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 

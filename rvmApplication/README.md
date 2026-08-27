@@ -12,7 +12,9 @@ The user picks a video from their device, the app decodes it frame-by-frame, run
 - Selectable compute backend per run: GPU delegate, NNAPI (NPU), CPU, or automatic fallback (NNAPI → GPU → CPU).
 - Two RVM backbones (ResNet50, MobileNetV3) and configurable resolution/downsample ratio, each resolving to a matching `.tflite` asset.
 - Frame-accurate hidden-state passing between inference calls, matching RVM's recurrent architecture.
-- Simple `VideoView`-based UI: select a video, run matting, preview the processed output.
+- Native Jetpack Compose UI: a home screen, a non-scrolling matting screen with synchronized Media3 input/output preview playback, and Save-to-gallery — see `docs/ui-redesign-plan.md` for the full design.
+
+The app uses a fixed brand colour scheme (not Material You dynamic colour) so its look is consistent across devices; see `docs/ui-redesign-plan.md`, "Key decision 3", for why and for the full palette.
 
 ## Requirements
 
@@ -51,8 +53,11 @@ For example, `MatteModuleConfig()` (the default config) resolves to `rvm_resnet5
 
 ```
 app/src/main/java/dev/hamster/rvm/
-├── MainActivity.kt              # UI entry point: video picker, playback, wires up Controller
-├── Controller.kt                # Orchestrates VideoHandlerModule + MatteModule to process a video end-to-end
+├── MainActivity.kt              # Entry point: hosts the home/matte screen switch, wires up MatteViewModel
+├── ui/                          # Compose screens (HomeScreen, MatteScreen, ConfigSheet, MatteViewModel)
+│   ├── theme/                   #   Fixed brand colour scheme, type scale, shape scale (RvmTheme)
+│   └── player/                  #   Media3 ExoPlayer wrapper (DualVideoSync, VideoSurface)
+├── Controller.kt                # Orchestrates VideoFrameDecoder/Encoder + MatteModule to process a video end-to-end
 ├── interfaces/                  # Generic contracts every inference module implements
 │   ├── ModuleInterface.kt       #   configure/run/reset/close, generic over a module's Config and IO types
 │   ├── ConfigInterface.kt #   minimal shape every module config resolves to (height, width, RuntimeConfig)
@@ -82,9 +87,9 @@ Inference modules follow a small, generic pattern so new models (segmentation, s
 
 ## Usage
 
-1. Launch the app and tap **Select Video** to pick a video from the device.
-2. Tap **Relight** to run matting over every frame; a status label shows progress.
-3. The processed output (alpha matte or foreground, depending on the flow used) plays back in the output preview.
+1. Launch the app, tap **Video Matte** on the home screen, then tap **Import** to pick a video from the device.
+2. Tap **Matte** to run matting over every frame; a status strip shows progress.
+3. Once done, switch between the **Matte** and **Foreground** outputs, played back in sync with the input; tap **Save** to copy both to `Movies/RVM` in the gallery.
 4. Tap **Reset** to clear the current selection and start over.
 
 ## Logging

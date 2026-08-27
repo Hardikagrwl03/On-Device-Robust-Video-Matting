@@ -6,8 +6,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.hamster.rvm.Controller
+import dev.hamster.rvm.R
 import dev.hamster.rvm.matte.MatteConfig
 import dev.hamster.rvm.modelRunner.RuntimeConfig
+import dev.hamster.rvm.utils.MediaStoreSaver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Everything the matting screen needs to render, as one observable snapshot. [config] and
@@ -24,15 +29,26 @@ import kotlinx.coroutines.launch
  */
 data class MatteUiState(
     val selectedVideoUri: Uri? = null,
-    val outputVideoUri: Uri? = null,
+    val outputMatteVideoUri: Uri? = null,
+    val outputFgrVideoUri: Uri? = null,
+    val outputSelection: OutputKind = OutputKind.MATTE,
     val config: MatteConfig = MatteConfig(),
     val stage: Stage = Stage.IDLE,
     val processedFrames: Int = 0,
     val totalFrames: Int = 0,
     val errorMessage: String? = null,
-    val elapsedMs: Long? = null
+    val elapsedMs: Long? = null,
+    val isSaving: Boolean = false,
+    val transientMessage: String? = null
 ) {
-    enum class Stage { IDLE, CONFIGURING, RUNNING, DONE, ERROR }
+    enum class Stage { IDLE, RUNNING, DONE, ERROR }
+    enum class OutputKind { MATTE, FOREGROUND }
+
+    val activeOutputUri: Uri?
+        get() = when (outputSelection) {
+            OutputKind.MATTE -> outputMatteVideoUri
+            OutputKind.FOREGROUND -> outputFgrVideoUri
+        }
 }
 
 private const val KEY_HEIGHT = "config_height"
@@ -55,7 +71,7 @@ private const val KEY_DOWNSAMPLE = "config_downsample"
  * kills and recreates the process, not just a config change.
  */
 class MatteViewModel(
-    application: Application,
+    private val application: Application,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -127,7 +143,9 @@ class MatteViewModel(
         _uiState.update {
             it.copy(
                 selectedVideoUri = uri,
-                outputVideoUri = null,
+                outputMatteVideoUri = null,
+                outputFgrVideoUri = null,
+                outputSelection = MatteUiState.OutputKind.MATTE,
                 stage = MatteUiState.Stage.IDLE,
                 processedFrames = 0,
                 totalFrames = 0,
@@ -150,7 +168,9 @@ class MatteViewModel(
         _uiState.update {
             it.copy(
                 stage = MatteUiState.Stage.RUNNING,
-                outputVideoUri = null,
+                outputMatteVideoUri = null,
+                outputFgrVideoUri = null,
+                outputSelection = MatteUiState.OutputKind.MATTE,
                 processedFrames = 0,
                 totalFrames = 0,
                 errorMessage = null,
@@ -166,7 +186,12 @@ class MatteViewModel(
                 }
                 val elapsed = System.currentTimeMillis() - startTime
                 _uiState.update {
-                    it.copy(stage = MatteUiState.Stage.DONE, outputVideoUri = outputUri, elapsedMs = elapsed)
+                    it.copy(
+                        stage = MatteUiState.Stage.DONE,
+                        outputMatteVideoUri = outputUri,
+                        outputFgrVideoUri = controller.outputFgrVideoUri,
+                        elapsedMs = elapsed
+                    )
                 }
             } catch (e: CancellationException) {
                 _uiState.update { it.copy(stage = MatteUiState.Stage.IDLE) }
@@ -194,7 +219,9 @@ class MatteViewModel(
         _uiState.update {
             it.copy(
                 selectedVideoUri = null,
-                outputVideoUri = null,
+                outputMatteVideoUri = null,
+                outputFgrVideoUri = null,
+                outputSelection = MatteUiState.OutputKind.MATTE,
                 stage = MatteUiState.Stage.IDLE,
                 processedFrames = 0,
                 totalFrames = 0,
@@ -202,6 +229,39 @@ class MatteViewModel(
                 elapsedMs = null
             )
         }
+    }
+
+    fun selectOutput(kind: MatteUiState.OutputKind) {
+        _uiState.update { it.copy(outputSelection = kind) }
+    }
+
+    fun saveOutputs() {
+        val matte = controller.outputMatteFile ?: return
+        if (_uiState.value.isSaving) return
+        _uiState.update { it.copy(isSaving = true) }
+        viewModelScope.launch {
+            try {
+                val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+                MediaStoreSaver.saveToMovies(application, matte, "RVM_matte_$stamp.mp4")
+                controller.outputFgrFile?.let {
+                    MediaStoreSaver.saveToMovies(application, it, "RVM_foreground_$stamp.mp4")
+                }
+                _uiState.update {
+                    it.copy(isSaving = false, transientMessage = application.getString(R.string.saved_to_gallery))
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        transientMessage = application.getString(R.string.save_failed, e.message ?: "")
+                    )
+                }
+            }
+        }
+    }
+
+    fun consumeTransientMessage() {
+        _uiState.update { it.copy(transientMessage = null) }
     }
 
     override fun onCleared() {

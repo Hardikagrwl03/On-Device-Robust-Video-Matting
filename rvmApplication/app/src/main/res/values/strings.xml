@@ -1,11 +1,9 @@
 <resources>
     <string name="app_name">RVM</string>
 
-    <string name="select_video">Select Video</string>
-    <string name="relight">Relight</string>
     <string name="reset">Reset</string>
-    <string name="input_video_label">Input Video</string>
-    <string name="output_video_label">Processed Video</string>
+    <string name="input_video_label">Input</string>
+    <string name="output_video_label">Output</string>
     <string name="no_video_selected">No video selected</string>
     <string name="configure">Configure</string>
     <string name="apply">Apply</string>
@@ -15,8 +13,6 @@
     <string name="backbone_label">Backbone</string>
     <string name="downsample_ratio_label">Downsample ratio</string>
     <string name="threads_label">Threads: %1$d</string>
-    <string name="dtype_label">Dtype</string>
-    <string name="threads_value_label">Threads</string>
     <string name="model_file_label">Model file</string>
     <string name="progress_caption">Frame %1$d / %2$d · %3$d%%</string>
     <string name="reset_confirm_title">Stop matting?</string>
@@ -27,4 +23,31 @@
     <string name="completion_stats">Done in %1$.1fs · %2$d ms/frame avg</string>
 
     <string name="error_selection_cancelled">Video selection cancelled.</string>
+
+    <string name="home_tagline">Subject from background, entirely on-device.</string>
+    <string name="home_video_title">Video Matte</string>
+    <string name="home_video_subtitle">Pick a clip and process it on-device</string>
+    <string name="home_live_title">Live Matte</string>
+    <string name="home_live_subtitle">Real-time camera preview</string>
+    <string name="home_live_badge">Coming soon</string>
+    <string name="coming_soon">Live matting is coming soon.</string>
+    <string name="logo_content_description">RVM logo</string>
+    <string name="back">Back</string>
+
+    <string name="action_import">Import</string>
+    <string name="action_matte">Matte</string>
+    <string name="configure_label">Model</string>
+    <string name="configure_content_description">Model settings</string>
+    <string name="status_idle_hint">Import a video to begin.</string>
+    <string name="status_ready_hint">Ready — tap Matte to run.</string>
+    <string name="config_summary">%1$s · %2$dp · ds %3$s · %4$s · %5$d threads</string>
+    <string name="config_applied">Configuration applied</string>
+    <string name="output_matte">Matte</string>
+    <string name="output_foreground">Foreground</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="action_save">Save</string>
+    <string name="save_content_description">Save output videos to gallery</string>
+    <string name="saved_to_gallery">Saved to Movies/RVM</string>
+    <string name="save_failed">Couldn\'t save: %1$s</string>
 </resources>
