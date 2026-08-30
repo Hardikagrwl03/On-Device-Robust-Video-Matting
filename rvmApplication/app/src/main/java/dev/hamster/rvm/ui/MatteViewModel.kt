@@ -11,12 +11,14 @@ import dev.hamster.rvm.matte.MatteConfig
 import dev.hamster.rvm.modelRunner.RuntimeConfig
 import dev.hamster.rvm.utils.MediaStoreSaver
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,7 +41,8 @@ data class MatteUiState(
     val errorMessage: String? = null,
     val elapsedMs: Long? = null,
     val isSaving: Boolean = false,
-    val transientMessage: String? = null
+    val transientMessage: String? = null,
+    val isConfiguring: Boolean = false
 ) {
     enum class Stage { IDLE, RUNNING, DONE, ERROR }
     enum class OutputKind { MATTE, FOREGROUND }
@@ -83,7 +86,36 @@ class MatteViewModel(
     private var runningJob: Job? = null
 
     init {
-        controller.configure(_uiState.value.config)
+        runConfigure(_uiState.value.config)
+    }
+
+    /**
+     * (Re)builds the TFLite interpreter/delegate for [config] off the main thread.
+     * [Controller.configure] rebuilds the interpreter whenever the model file, compute device, or
+     * thread count changed, which can take anywhere from tens of milliseconds to a few seconds
+     * (GPU delegate compilation especially) - running it inline on the caller's thread is what
+     * made the config sheet's Apply button, and the very first navigation into this screen (which
+     * triggers this class's lazy construction), appear to hang with no feedback. [isConfiguring]
+     * lets the UI show a spinner instead.
+     *
+     * [isConfiguring] is raised *synchronously*, before the coroutine is launched, and cleared in
+     * a `finally`. Raising it inside the coroutine instead left a window where a caller guarding
+     * on it (see [updateConfig]) still read `false` and started a second, overlapping
+     * `Controller.configure` - two interpreter/GPU-delegate builds then raced on two different
+     * `Dispatchers.Default` workers, and whichever lost leaked its delegate.
+     */
+    private fun runConfigure(config: MatteConfig, onComplete: () -> Unit = {}) {
+        _uiState.update { it.copy(isConfiguring = true) }
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.Default) {
+                    controller.configure(config)
+                }
+                onComplete()
+            } finally {
+                _uiState.update { it.copy(isConfiguring = false) }
+            }
+        }
     }
 
     private fun restoreConfig(): MatteConfig {
@@ -155,14 +187,18 @@ class MatteViewModel(
         }
     }
 
-    fun updateConfig(config: MatteConfig) {
-        controller.configure(config)
-        persistConfig(config)
-        _uiState.update { it.copy(config = config) }
+    fun updateConfig(config: MatteConfig, onApplied: () -> Unit = {}) {
+        if (_uiState.value.isConfiguring) return
+        runConfigure(config) {
+            persistConfig(config)
+            _uiState.update { it.copy(config = config) }
+            onApplied()
+        }
     }
 
     fun runMatting() {
         if (_uiState.value.stage == MatteUiState.Stage.RUNNING) return
+        if (_uiState.value.isConfiguring) return
         if (_uiState.value.selectedVideoUri == null) return
 
         _uiState.update {

@@ -6,16 +6,28 @@ import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import dev.hamster.rvm.utils.ConfinedRunner
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import java.nio.ByteBuffer
 
-/** Decodes a source video's frames into model-ready tensor buffers. Read-only; pair with a separate [VideoFrameEncoder] to write results. */
+/**
+ * Decodes a source video's frames into model-ready tensor buffers. Read-only; pair with a
+ * separate [VideoFrameEncoder] to write results.
+ *
+ * [startVideoDecoder], [getNextFrame] and [getNextFrames] are confined to one dedicated thread
+ * via [runner] - [MediaMetadataRetriever] is not safe to drive from multiple threads
+ * concurrently. The plain getters below are not confined: they only read Kotlin fields written
+ * once by [startVideoDecoder] and read afterwards, so they carry no native-object affinity, and
+ * routing them through the confined thread would just be a pointless hop on every call.
+ */
 class VideoFrameDecoder(private val context: Context) : VideoFrameDecoderInterface {
 
     companion object {
         const val TAG = "VideoFrameDecoder"
     }
+
+    private val runner = ConfinedRunner("rvm-decode")
 
     private var inputVideoUri: Uri? = null
 
@@ -30,7 +42,18 @@ class VideoFrameDecoder(private val context: Context) : VideoFrameDecoderInterfa
     private val retriever = MediaMetadataRetriever()
     private var decoderIndex: Int = 0
 
-    override fun startVideoDecoder(uri: Uri, frames: Int){
+    override fun startVideoDecoder(uri: Uri, frames: Int) =
+        runner.run { startVideoDecoderImpl(uri, frames) }
+
+    override fun getNextFrame(frameBuffer: ByteBuffer) =
+        runner.run { getNextFrameImpl(frameBuffer) }
+
+    override fun getNextFrames(framesBuffer: ByteBuffer, count: Int) =
+        runner.run { getNextFramesImpl(framesBuffer, count) }
+
+    override fun close() = runner.run { retriever.release() }.also { runner.shutdown() }
+
+    private fun startVideoDecoderImpl(uri: Uri, frames: Int){
         inputVideoUri = uri
         numFrames = frames
         decoderIndex = 0
@@ -50,7 +73,7 @@ class VideoFrameDecoder(private val context: Context) : VideoFrameDecoderInterfa
         }
     }
 
-    override fun getNextFrame(frameBuffer: ByteBuffer){
+    private fun getNextFrameImpl(frameBuffer: ByteBuffer){
         val startTime = System.currentTimeMillis()
         val bitmap = retriever.getFrameAtTime(
             decoderIndex.toLong() * frameDurationUs!!,
@@ -65,7 +88,7 @@ class VideoFrameDecoder(private val context: Context) : VideoFrameDecoderInterfa
         Log.d(TAG, "getNextFrame: Frame decoded from video in ${System.currentTimeMillis() - startTime} ms")
     }
 
-    override fun getNextFrames(framesBuffer: ByteBuffer, count: Int){
+    private fun getNextFramesImpl(framesBuffer: ByteBuffer, count: Int){
         val tensorImage = TensorImage(DataType.FLOAT32)
         var i = 0
         while(i < count){

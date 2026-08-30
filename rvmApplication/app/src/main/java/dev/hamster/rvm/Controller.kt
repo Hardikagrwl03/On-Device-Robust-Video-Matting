@@ -33,8 +33,8 @@ class Controller(val context: Context) {
     private lateinit var config: MatteConfig
     val mattingModule = MatteModule(context)
     private val videoDecoder = VideoFrameDecoder(context)
-    private val matteEncoder = VideoFrameEncoder()
-    private val fgrEncoder = VideoFrameEncoder()
+    private val matteEncoder = VideoFrameEncoder("rvm-encode-matte")
+    private val fgrEncoder = VideoFrameEncoder("rvm-encode-fgr")
 
 
     fun configure(config: MatteConfig){
@@ -139,6 +139,12 @@ class Controller(val context: Context) {
 
     fun close(){
         mattingModule.close()
+        videoDecoder.close()
+        // Not saveVideo() - that's the per-run finalize step, already done at the end of every
+        // successful matteVideo() run. This only shuts down each encoder's dedicated thread, once,
+        // when the whole Controller (and thus these reused encoder instances) is being torn down.
+        matteEncoder.close()
+        fgrEncoder.close()
     }
 
 }

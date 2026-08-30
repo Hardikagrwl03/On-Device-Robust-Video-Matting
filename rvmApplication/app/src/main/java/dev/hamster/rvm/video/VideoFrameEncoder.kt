@@ -5,6 +5,7 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.util.Log
+import dev.hamster.rvm.utils.ConfinedRunner
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
@@ -13,13 +14,19 @@ import java.nio.FloatBuffer
  * Encodes model-output tensor buffers into a video file. Owns its own [MediaCodec]/[MediaMuxer]
  * pair, so multiple independent instances can each write a separate output video (e.g. one for
  * the alpha matte, one for the foreground) from the same decode/inference pass.
+ *
+ * All work is confined to one dedicated thread via [runner] - [MediaCodec] and [MediaMuxer] are
+ * not safe to drive from multiple threads concurrently. [threadName] lets each of `Controller`'s
+ * two encoder instances get a distinct, logcat-identifiable thread.
  */
-class VideoFrameEncoder : VideoFrameEncoderInterface {
+class VideoFrameEncoder(threadName: String = "rvm-encode") : VideoFrameEncoderInterface {
 
     companion object {
         const val TAG = "VideoFrameEncoder"
         private const val MIME_TYPE = MediaFormat.MIMETYPE_VIDEO_AVC
     }
+
+    private val runner = ConfinedRunner(threadName)
 
     private var outputVideoFile: File? = null
     private var width: Int = 0
@@ -39,7 +46,20 @@ class VideoFrameEncoder : VideoFrameEncoderInterface {
     private var yuvBuffer: ByteArray = ByteArray(0)
     private var floatArray: FloatArray = FloatArray(0)
 
-    override fun startVideoEncoder(outputFile: File, width: Int, height: Int, fps: Int, bitrate: Int){
+    override fun startVideoEncoder(outputFile: File, width: Int, height: Int, fps: Int, bitrate: Int) =
+        runner.run { startVideoEncoderImpl(outputFile, width, height, fps, bitrate) }
+
+    override fun putNextFrame(frameBuffer: ByteBuffer, channels: Int, scale: Float) =
+        runner.run { putNextFrameImpl(frameBuffer, channels, scale) }
+
+    override fun putNextFrames(frameBuffer: ByteBuffer, count: Int, channels: Int, scale: Float) =
+        runner.run { putNextFramesImpl(frameBuffer, count, channels, scale) }
+
+    override fun saveVideo(): File = runner.run { saveVideoImpl() }
+
+    override fun close() = runner.shutdown()
+
+    private fun startVideoEncoderImpl(outputFile: File, width: Int, height: Int, fps: Int, bitrate: Int){
         outputVideoFile = outputFile
         this.width = width
         this.height = height
@@ -66,7 +86,7 @@ class VideoFrameEncoder : VideoFrameEncoderInterface {
         bufferInfo = MediaCodec.BufferInfo()
     }
 
-    override fun putNextFrame(frameBuffer: ByteBuffer, channels: Int, scale: Float){
+    private fun putNextFrameImpl(frameBuffer: ByteBuffer, channels: Int, scale: Float){
         val startTime = System.currentTimeMillis()
         val yuv = floatBufferToNV21(frameBuffer.asFloatBuffer(), channels, scale)
 
@@ -100,20 +120,22 @@ class VideoFrameEncoder : VideoFrameEncoderInterface {
         Log.d(TAG, "putNextFrame: Frame encoded into video in ${System.currentTimeMillis() - startTime} ms")
     }
 
-    override fun putNextFrames(frameBuffer: ByteBuffer, count: Int, channels: Int, scale: Float){
+    private fun putNextFramesImpl(frameBuffer: ByteBuffer, count: Int, channels: Int, scale: Float){
         val originalPosition = frameBuffer.position()
         val originalLimit = frameBuffer.limit()
         for( i in 0 until count){
             frameBuffer.position(i*height*width*4*channels)
             frameBuffer.limit((i+1)*height*width*4*channels)
             val slice = frameBuffer.slice().order(frameBuffer.order())
-            putNextFrame(slice, channels, scale)
+            // putNextFrameImpl(), not putNextFrame(): the wrapper would re-enter `runner`, which
+            // is a single-thread executor - re-entering from a task already running on it deadlocks.
+            putNextFrameImpl(slice, channels, scale)
         }
         frameBuffer.position(originalPosition)
         frameBuffer.limit(originalLimit)
     }
 
-    override fun saveVideo(): File {
+    private fun saveVideoImpl(): File {
         // End of stream
         val inputBufferId = encoder!!.dequeueInputBuffer(10000)
         if (inputBufferId >= 0) {

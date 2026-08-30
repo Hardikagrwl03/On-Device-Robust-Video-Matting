@@ -170,7 +170,7 @@ fun MatteScreen(viewModel: MatteViewModel, onNavigateBack: () -> Unit) {
         bottomBar = {
             MatteActionBar(
                 isRunning = isRunning,
-                canRun = uiState.selectedVideoUri != null,
+                canRun = uiState.selectedVideoUri != null && !uiState.isConfiguring,
                 onImport = { pickVideo.launch("video/*") },
                 onRunOrCancel = { if (isRunning) viewModel.cancel() else viewModel.runMatting() },
                 onReset = { if (isRunning) showResetConfirm = true else viewModel.reset() }
@@ -185,7 +185,11 @@ fun MatteScreen(viewModel: MatteViewModel, onNavigateBack: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ConfigButton(config = uiState.config, onClick = { showConfigSheet = true })
+            ConfigButton(
+                config = uiState.config,
+                isConfiguring = uiState.isConfiguring,
+                onClick = { showConfigSheet = true }
+            )
 
             PreviewFrame(
                 label = stringResource(R.string.input_video_label),
@@ -239,9 +243,11 @@ fun MatteScreen(viewModel: MatteViewModel, onNavigateBack: () -> Unit) {
         visible = showConfigSheet,
         config = uiState.config,
         isRunning = isRunning,
-        onApply = {
-            viewModel.updateConfig(it)
-            Toast.makeText(context, R.string.config_applied, Toast.LENGTH_SHORT).show()
+        isConfiguring = uiState.isConfiguring,
+        onApply = { newConfig ->
+            viewModel.updateConfig(newConfig) {
+                Toast.makeText(context, R.string.config_applied, Toast.LENGTH_SHORT).show()
+            }
         },
         onDismiss = { showConfigSheet = false }
     )
@@ -273,7 +279,7 @@ fun MatteScreen(viewModel: MatteViewModel, onNavigateBack: () -> Unit) {
  * both the old [MatteConfig] summary card and the separate full-width "Configure" button.
  */
 @Composable
-private fun ConfigButton(config: MatteConfig, onClick: () -> Unit) {
+private fun ConfigButton(config: MatteConfig, isConfiguring: Boolean, onClick: () -> Unit) {
     val summary = stringResource(
         R.string.config_summary,
         config.variant.backbone,
@@ -302,11 +308,19 @@ private fun ConfigButton(config: MatteConfig, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
-                Icons.Filled.Tune,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
+            if (isConfiguring) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = LocalContentColor.current
+                )
+            } else {
+                Icon(
+                    Icons.Filled.Tune,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
             Text(stringResource(R.string.configure_label), style = MaterialTheme.typography.labelLarge)
             Text(
                 summary,

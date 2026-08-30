@@ -50,4 +50,7 @@ interface VideoFrameDecoderInterface {
      * for configuring a [VideoFrameEncoderInterface] to match the source.
      */
     fun getBitrate(): Int
+
+    /** Releases the underlying retriever and the decoder's dedicated thread. Unusable afterwards. */
+    fun close()
 }

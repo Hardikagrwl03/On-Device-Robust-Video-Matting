@@ -3,15 +3,21 @@ package dev.hamster.rvm.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -75,6 +81,7 @@ fun ConfigSheet(
     visible: Boolean,
     config: MatteConfig,
     isRunning: Boolean,
+    isConfiguring: Boolean,
     onApply: (MatteConfig) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -90,6 +97,18 @@ fun ConfigSheet(
             sheetState.hide()
         }.invokeOnCompletion {
             if (!sheetState.isVisible) onDismiss()
+        }
+    }
+
+    // Set true right before onApply fires; once the resulting isConfiguring run finishes, the
+    // sheet dismisses itself. Keeping the sheet open with the Apply button showing a spinner
+    // (rather than dismissing immediately) is what makes an in-flight interpreter rebuild visible
+    // instead of looking like the tap did nothing.
+    var isApplying by remember { mutableStateOf(false) }
+    LaunchedEffect(isConfiguring) {
+        if (isApplying && !isConfiguring) {
+            isApplying = false
+            dismiss()
         }
     }
 
@@ -236,12 +255,21 @@ fun ConfigSheet(
                                 numThreads = draft.numThreads
                             )
                         )
+                        isApplying = true
                         onApply(newConfig)
-                        dismiss()
                     },
-                    enabled = !isRunning,
+                    enabled = !isRunning && !isConfiguring,
+                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
                     modifier = Modifier.weight(1f)
                 ) {
+                    if (isConfiguring) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(ButtonDefaults.IconSize),
+                            strokeWidth = 2.dp,
+                            color = LocalContentColor.current
+                        )
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    }
                     Text(stringResource(R.string.apply))
                 }
             }

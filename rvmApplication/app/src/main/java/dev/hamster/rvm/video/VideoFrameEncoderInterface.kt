@@ -28,8 +28,16 @@ interface VideoFrameEncoderInterface {
     fun putNextFrames(frameBuffer: ByteBuffer, count: Int, channels: Int = 3, scale: Float = 1f)
 
     /**
-     * Finalizes the encoding process and saves the file to disk.
+     * Finalizes the encoding process and saves the file to disk. Safe to call again after a
+     * subsequent [startVideoEncoder] - `Controller` reuses one encoder instance across multiple
+     * runs, so this must not tear down anything the instance needs for its next run.
      * @return The final saved video file.
      */
     fun saveVideo(): File
+
+    /**
+     * Releases the encoder's dedicated thread. Call once the instance is done being reused
+     * (typically from the owner's `close()`), not after each [saveVideo]. Unusable afterwards.
+     */
+    fun close()
 }

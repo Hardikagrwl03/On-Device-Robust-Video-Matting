@@ -16,12 +16,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,8 +40,19 @@ import androidx.compose.ui.unit.dp
 import dev.hamster.rvm.R
 
 @Composable
-fun HomeScreen(onOpenVideoMatte: () -> Unit, modifier: Modifier = Modifier) {
+fun HomeScreen(isModelReady: Boolean, onOpenVideoMatte: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+
+    // Tapping Video Matte navigates as soon as the model is ready; if it's still loading (the
+    // first navigation of a session usually is, since MatteViewModel's initial configure runs in
+    // the background from app launch), the tile shows a spinner instead of appearing to do
+    // nothing until the model finishes loading, at which point navigation proceeds automatically.
+    var isNavigating by remember { mutableStateOf(false) }
+    LaunchedEffect(isNavigating, isModelReady) {
+        if (isNavigating && isModelReady) {
+            onOpenVideoMatte()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -91,7 +108,8 @@ fun HomeScreen(onOpenVideoMatte: () -> Unit, modifier: Modifier = Modifier) {
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 badge = null,
-                onClick = onOpenVideoMatte
+                loading = isNavigating && !isModelReady,
+                onClick = { isNavigating = true }
             )
             HomeActionTile(
                 icon = Icons.Filled.Videocam,
@@ -118,10 +136,12 @@ private fun HomeActionTile(
     containerColor: Color,
     contentColor: Color,
     badge: String? = null,
+    loading: Boolean = false,
     onClick: () -> Unit
 ) {
     Surface(
         onClick = onClick,
+        enabled = !loading,
         shape = MaterialTheme.shapes.extraLarge,
         color = containerColor,
         contentColor = contentColor,
@@ -132,7 +152,11 @@ private fun HomeActionTile(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp))
+            if (loading) {
+                CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp, color = contentColor)
+            } else {
+                Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp))
+            }
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
                 Text(

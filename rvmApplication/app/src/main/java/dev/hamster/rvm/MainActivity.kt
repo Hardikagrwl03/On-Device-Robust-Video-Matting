@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -35,11 +36,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             RvmTheme {
                 var destination by rememberSaveable { mutableStateOf(RvmDestination.HOME) }
+                // Collecting uiState here (rather than only inside MatteScreen) forces the lazy
+                // `by viewModels` delegate to construct MatteViewModel immediately at launch, so
+                // its initial model load starts in the background while the home screen is shown
+                // instead of only starting once the user taps into the matting screen.
+                val uiState by viewModel.uiState.collectAsState()
                 BackHandler(enabled = destination != RvmDestination.HOME) {
                     destination = RvmDestination.HOME
                 }
                 when (destination) {
-                    RvmDestination.HOME -> HomeScreen(onOpenVideoMatte = { destination = RvmDestination.MATTE })
+                    RvmDestination.HOME -> HomeScreen(
+                        isModelReady = !uiState.isConfiguring,
+                        onOpenVideoMatte = { destination = RvmDestination.MATTE }
+                    )
                     RvmDestination.MATTE -> MatteScreen(viewModel, onNavigateBack = { destination = RvmDestination.HOME })
                 }
             }
