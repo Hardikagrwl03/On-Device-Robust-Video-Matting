@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.coroutines.coroutineContext
 
@@ -23,9 +24,12 @@ class Controller(val context: Context) {
     }
     var inputVideoUri: Uri? = null
     var outputFgrVideoUri: Uri? = null
+    var outputCompositeVideoUri: Uri? = null
     var outputMatteFile: File? = null
         private set
     var outputFgrFile: File? = null
+        private set
+    var outputCompositeFile: File? = null
         private set
     var height: Int? = null
     var width: Int? = null
@@ -35,6 +39,13 @@ class Controller(val context: Context) {
     private val videoDecoder = VideoFrameDecoder(context)
     private val matteEncoder = VideoFrameEncoder("rvm-encode-matte")
     private val fgrEncoder = VideoFrameEncoder("rvm-encode-fgr")
+    private val compositeEncoder = VideoFrameEncoder("rvm-encode-composite")
+
+    // Reused across compositeForegroundWithAlpha calls instead of being reallocated per frame,
+    // same reasoning as VideoFrameEncoder's yuvBuffer/floatArray reuse: at 720x1280 these are
+    // multi-megabyte arrays.
+    private var compositeFgrScratch: FloatArray = FloatArray(0)
+    private var compositeAlphaScratch: FloatArray = FloatArray(0)
 
 
     fun configure(config: MatteConfig){
@@ -60,10 +71,11 @@ class Controller(val context: Context) {
 
     /**
      * Runs matting over the loaded video in a single decode/inference pass, writing the alpha
-     * matte and the foreground into two separate videos at once (rather than decoding and
-     * running inference twice, once per output, the way separate matte/fgr passes used to).
-     * Returns the alpha matte video's URI; the foreground video's URI is available afterward via
-     * [outputFgrVideoUri].
+     * matte, the foreground, and their per-pixel composite (foreground * alpha - the subject
+     * matted onto black, edges fading out by opacity rather than hard-cut) into three separate
+     * videos at once (rather than decoding and running inference three times, once per output).
+     * Returns the alpha matte video's URI; the foreground and composite videos' URIs are
+     * available afterward via [outputFgrVideoUri] and [outputCompositeVideoUri].
      */
     suspend fun matteVideo(onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }): Uri = withContext(Dispatchers.Default) {
         mattingModule.reset()
@@ -72,8 +84,10 @@ class Controller(val context: Context) {
         val stamp = System.currentTimeMillis()
         val matteFile = File(runDir, "matte_$stamp.mp4")
         val fgrFile = File(runDir, "fgr_$stamp.mp4")
+        val compositeFile = File(runDir, "composite_$stamp.mp4")
         matteEncoder.startVideoEncoder(matteFile, config.width, config.height, videoDecoder.getFps(), videoDecoder.getBitrate())
         fgrEncoder.startVideoEncoder(fgrFile, config.width, config.height, videoDecoder.getFps(), videoDecoder.getBitrate())
+        compositeEncoder.startVideoEncoder(compositeFile, config.width, config.height, videoDecoder.getFps(), videoDecoder.getBitrate())
 
         val frameBuffer: SharedBuffer = SharedBuffer(config.height* config.width*3*4)
         val inputFrameBuffer = frameBuffer.buffer
@@ -83,6 +97,10 @@ class Controller(val context: Context) {
         }
         val matteBuffer: SharedBuffer = SharedBuffer(config.height* config.width*4)
         val outputMatteBuffer = matteBuffer.buffer.apply {
+            order(ByteOrder.nativeOrder())
+        }
+        val compositeBuffer: SharedBuffer = SharedBuffer(config.height* config.width*3*4)
+        val outputCompositeBuffer = compositeBuffer.buffer.apply {
             order(ByteOrder.nativeOrder())
         }
         for(i in 0 until frames!!){
@@ -95,12 +113,16 @@ class Controller(val context: Context) {
             outputFgrBuffer.rewind()
             outputMatteBuffer.rewind()
 
+            compositeForegroundWithAlpha(outputFgrBuffer, outputMatteBuffer, outputCompositeBuffer, config.height * config.width)
+
             matteEncoder.putNextFrame(outputMatteBuffer, channels = 1, scale = 255.0f)
             fgrEncoder.putNextFrame(outputFgrBuffer, channels = 3)
+            compositeEncoder.putNextFrame(outputCompositeBuffer, channels = 3)
 
             inputFrameBuffer.rewind()
             outputFgrBuffer.rewind()
             outputMatteBuffer.rewind()
+            outputCompositeBuffer.rewind()
 
             Log.d(TAG, "matteVideo: Frame $i Matte + Foreground Estimation in ${System.currentTimeMillis() - startTime} ms")
             onProgress(i + 1, frames!!)
@@ -109,14 +131,54 @@ class Controller(val context: Context) {
         inputFrameBuffer.clear()
         outputMatteBuffer.clear()
         outputFgrBuffer.clear()
+        outputCompositeBuffer.clear()
 
         matteEncoder.saveVideo()
         fgrEncoder.saveVideo()
+        compositeEncoder.saveVideo()
 
         outputMatteFile = matteFile
         outputFgrFile = fgrFile
+        outputCompositeFile = compositeFile
         outputFgrVideoUri = Uri.fromFile(fgrFile)
+        outputCompositeVideoUri = Uri.fromFile(compositeFile)
         Uri.fromFile(matteFile)
+    }
+
+    /**
+     * Writes `fgr[pixel] * alpha[pixel]` (per RGB channel, same alpha for all three) into [out] -
+     * the subject matted onto black, with partially-transparent edges fading by opacity instead
+     * of being either fully kept or fully cut. All three buffers are FLOAT32, row-major,
+     * interleaved-channel tensors as produced by [MatteModule]; [fgr] and [out] have 3 channels,
+     * [alpha] has 1.
+     *
+     * Bulk-copies into [compositeFgrScratch]/[compositeAlphaScratch] and back rather than using
+     * per-element `FloatBuffer.get(index)`/`put(index, value)`: at 720x1280 that's ~2.76M
+     * individual buffer accesses per frame, which measured at ~300ms/frame (more than the
+     * inference step itself) on these `SharedMemory`-backed buffers - bulk transfer plus a tight
+     * primitive-`FloatArray` loop (the same pattern `VideoFrameEncoder.floatBufferToNV21` already
+     * uses) does the identical work in a few ms.
+     */
+    private fun compositeForegroundWithAlpha(fgr: ByteBuffer, alpha: ByteBuffer, out: ByteBuffer, pixelCount: Int) {
+        if (compositeFgrScratch.size != pixelCount * 3) {
+            compositeFgrScratch = FloatArray(pixelCount * 3)
+        }
+        if (compositeAlphaScratch.size != pixelCount) {
+            compositeAlphaScratch = FloatArray(pixelCount)
+        }
+
+        fgr.asFloatBuffer().get(compositeFgrScratch, 0, pixelCount * 3)
+        alpha.asFloatBuffer().get(compositeAlphaScratch, 0, pixelCount)
+
+        for (pixel in 0 until pixelCount) {
+            val a = compositeAlphaScratch[pixel]
+            val base = pixel * 3
+            compositeFgrScratch[base] *= a
+            compositeFgrScratch[base + 1] *= a
+            compositeFgrScratch[base + 2] *= a
+        }
+
+        out.asFloatBuffer().put(compositeFgrScratch, 0, pixelCount * 3)
     }
 
     private fun prepareRunDir(): File {
@@ -134,7 +196,9 @@ class Controller(val context: Context) {
         File(context.cacheDir, "rvm_runs").listFiles()?.forEach { it.delete() }
         outputMatteFile = null
         outputFgrFile = null
+        outputCompositeFile = null
         outputFgrVideoUri = null
+        outputCompositeVideoUri = null
     }
 
     fun close(){
@@ -145,6 +209,7 @@ class Controller(val context: Context) {
         // when the whole Controller (and thus these reused encoder instances) is being torn down.
         matteEncoder.close()
         fgrEncoder.close()
+        compositeEncoder.close()
     }
 
 }

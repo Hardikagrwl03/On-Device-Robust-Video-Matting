@@ -33,6 +33,7 @@ data class MatteUiState(
     val selectedVideoUri: Uri? = null,
     val outputMatteVideoUri: Uri? = null,
     val outputFgrVideoUri: Uri? = null,
+    val outputCompositeVideoUri: Uri? = null,
     val outputSelection: OutputKind = OutputKind.MATTE,
     val config: MatteConfig = MatteConfig(),
     val stage: Stage = Stage.IDLE,
@@ -45,12 +46,13 @@ data class MatteUiState(
     val isConfiguring: Boolean = false
 ) {
     enum class Stage { IDLE, RUNNING, DONE, ERROR }
-    enum class OutputKind { MATTE, FOREGROUND }
+    enum class OutputKind { MATTE, FOREGROUND, BOTH }
 
     val activeOutputUri: Uri?
         get() = when (outputSelection) {
             OutputKind.MATTE -> outputMatteVideoUri
             OutputKind.FOREGROUND -> outputFgrVideoUri
+            OutputKind.BOTH -> outputCompositeVideoUri
         }
 }
 
@@ -177,6 +179,7 @@ class MatteViewModel(
                 selectedVideoUri = uri,
                 outputMatteVideoUri = null,
                 outputFgrVideoUri = null,
+                outputCompositeVideoUri = null,
                 outputSelection = MatteUiState.OutputKind.MATTE,
                 stage = MatteUiState.Stage.IDLE,
                 processedFrames = 0,
@@ -206,6 +209,7 @@ class MatteViewModel(
                 stage = MatteUiState.Stage.RUNNING,
                 outputMatteVideoUri = null,
                 outputFgrVideoUri = null,
+                outputCompositeVideoUri = null,
                 outputSelection = MatteUiState.OutputKind.MATTE,
                 processedFrames = 0,
                 totalFrames = 0,
@@ -226,6 +230,7 @@ class MatteViewModel(
                         stage = MatteUiState.Stage.DONE,
                         outputMatteVideoUri = outputUri,
                         outputFgrVideoUri = controller.outputFgrVideoUri,
+                        outputCompositeVideoUri = controller.outputCompositeVideoUri,
                         elapsedMs = elapsed
                     )
                 }
@@ -257,6 +262,7 @@ class MatteViewModel(
                 selectedVideoUri = null,
                 outputMatteVideoUri = null,
                 outputFgrVideoUri = null,
+                outputCompositeVideoUri = null,
                 outputSelection = MatteUiState.OutputKind.MATTE,
                 stage = MatteUiState.Stage.IDLE,
                 processedFrames = 0,
@@ -281,6 +287,9 @@ class MatteViewModel(
                 MediaStoreSaver.saveToMovies(application, matte, "RVM_matte_$stamp.mp4")
                 controller.outputFgrFile?.let {
                     MediaStoreSaver.saveToMovies(application, it, "RVM_foreground_$stamp.mp4")
+                }
+                controller.outputCompositeFile?.let {
+                    MediaStoreSaver.saveToMovies(application, it, "RVM_composite_$stamp.mp4")
                 }
                 _uiState.update {
                     it.copy(isSaving = false, transientMessage = application.getString(R.string.saved_to_gallery))

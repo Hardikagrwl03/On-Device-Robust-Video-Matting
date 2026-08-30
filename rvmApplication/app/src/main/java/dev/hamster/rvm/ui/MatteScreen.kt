@@ -7,6 +7,7 @@ import androidx.compose.animation.Crossfade
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -46,9 +47,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -67,13 +66,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.exoplayer.ExoPlayer
@@ -335,7 +338,7 @@ private fun ConfigButton(config: MatteConfig, isConfiguring: Boolean, onClick: (
     }
 }
 
-/** Matte/Foreground segmented switcher, plus a Save button once output exists to save. */
+/** Matte/Foreground/Both segmented switcher, plus a Save button once output exists to save. */
 @Composable
 private fun OutputBar(
     uiState: MatteUiState,
@@ -349,24 +352,11 @@ private fun OutputBar(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val kinds = MatteUiState.OutputKind.entries
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.weight(1f).fillMaxHeight()
-        ) {
-            kinds.forEachIndexed { index, kind ->
-                SegmentedButton(
-                    selected = uiState.outputSelection == kind,
-                    onClick = { onSelect(kind) },
-                    shape = SegmentedButtonDefaults.itemShape(index, kinds.size)
-                ) {
-                    Text(
-                        stringResource(
-                            if (kind == MatteUiState.OutputKind.MATTE) R.string.output_matte else R.string.output_foreground
-                        )
-                    )
-                }
-            }
-        }
+        OutputKindRow(
+            selected = uiState.outputSelection,
+            onSelect = onSelect,
+            modifier = Modifier.height(40.dp)
+        )
 
         FilledTonalButton(
             onClick = onSave,
@@ -389,6 +379,74 @@ private fun OutputBar(
             }
             Spacer(Modifier.width(ButtonDefaults.IconSpacing))
             Text(stringResource(R.string.action_save), maxLines = 1)
+        }
+    }
+}
+
+/**
+ * A Matte/Foreground/Both switcher sized to each label's own content rather than equal thirds:
+ * "Foreground" alongside two much shorter labels means forcing equal widths either clips it or
+ * wastes space around "Matte"/"Both". Material3's [SegmentedButton] hardcodes `Modifier.weight(1f)`
+ * on every segment with no supported way to override it, so this replicates
+ * [SingleChoiceSegmentedButtonRow]'s visual styling (shape, colour roles, border, overlap) by
+ * hand - the piece that resolves those colours, `SegmentedButtonColors`' color functions, is
+ * `internal` to the material3 module and not callable from here, but the shape helpers
+ * ([SegmentedButtonDefaults.baseShape]/[SegmentedButtonDefaults.itemShape]/
+ * [SegmentedButtonDefaults.BorderWidth]) are public and reused directly. Every segment gets the
+ * same [ButtonDefaults.TextButtonContentPadding] inset regardless of width, so padding is
+ * identical everywhere - it's only the label (and therefore the segment) that varies.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OutputKindRow(
+    selected: MatteUiState.OutputKind,
+    onSelect: (MatteUiState.OutputKind) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val kinds = MatteUiState.OutputKind.entries
+    val baseShape = SegmentedButtonDefaults.baseShape
+    val borderWidth = SegmentedButtonDefaults.BorderWidth
+    val borderColor = MaterialTheme.colorScheme.outline
+    val selectedContainer = MaterialTheme.colorScheme.secondaryContainer
+    val selectedContent = MaterialTheme.colorScheme.onSecondaryContainer
+    val unselectedContent = MaterialTheme.colorScheme.onSurface
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(-borderWidth)
+    ) {
+        kinds.forEachIndexed { index, kind ->
+            val isSelected = kind == selected
+            Surface(
+                selected = isSelected,
+                onClick = { onSelect(kind) },
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .zIndex(if (isSelected) 1f else 0f)
+                    .semantics { role = Role.RadioButton },
+                shape = SegmentedButtonDefaults.itemShape(index, kinds.size, baseShape),
+                color = if (isSelected) selectedContainer else Color.Transparent,
+                contentColor = if (isSelected) selectedContent else unselectedContent,
+                border = BorderStroke(borderWidth, borderColor)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(ButtonDefaults.TextButtonContentPadding)
+                ) {
+                    Text(
+                        stringResource(
+                            when (kind) {
+                                MatteUiState.OutputKind.MATTE -> R.string.output_matte
+                                MatteUiState.OutputKind.FOREGROUND -> R.string.output_foreground
+                                MatteUiState.OutputKind.BOTH -> R.string.output_both
+                            }
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
+            }
         }
     }
 }

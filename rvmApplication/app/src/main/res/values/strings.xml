@@ -44,6 +44,7 @@
     <string name="config_applied">Configuration applied</string>
     <string name="output_matte">Matte</string>
     <string name="output_foreground">Foreground</string>
+    <string name="output_both">Composite</string>
     <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="action_save">Save</string>
