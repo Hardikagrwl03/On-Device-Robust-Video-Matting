@@ -2,36 +2,46 @@ package dev.hamster.rvm.matte
 
 import android.content.Context
 import android.util.Log
-import dev.hamster.rvm.utils.TFLiteModelRunner
+import dev.hamster.rvm.modelRunner.TFLiteModelRunner
 import dev.hamster.rvm.interfaces.HiddenStatesInterface
 import dev.hamster.rvm.interfaces.ModuleInterface
+import dev.hamster.rvm.utils.ConfinedRunner
 import java.nio.ByteBuffer
 
-/** MatteModule's [dev.hamster.rvm.interfaces.ModuleInterface] IO: named buffers instead of positional ones so call sites read clearly. */
-data class MatteIO(
-    val inputImage: ByteBuffer,
-    val outputForeground: ByteBuffer,
-    val outputAlphaMatte: ByteBuffer
-)
-
-/** Matte-specific implementation of [ModuleInterface]: runs the RVM matting model and carries its hidden states between frames. */
+/**
+ * Matte-specific implementation of [ModuleInterface]: runs the RVM matting model and carries its
+ * hidden states between frames.
+ *
+ * All work is confined to one dedicated thread via [runner]. The TFLite GPU delegate binds an
+ * EGL context to the thread that creates the interpreter; invoking the interpreter from a
+ * different thread (e.g. two separate `Dispatchers.Default` dispatches, which give no
+ * same-thread guarantee) is undefined behaviour on that delegate. Confining every call - build
+ * and invoke alike - to this one thread makes that safe by construction.
+ */
 class MatteModule(
     context: Context
-) : ModuleInterface<MatteModuleConfig, MatteIO> {
+) : ModuleInterface<MatteConfig, MatteIO> {
     companion object {
         const val TAG = "MatteModule"
     }
+    private val runner = ConfinedRunner("rvm-matte")
     private val matteModel = TFLiteModelRunner(context)
     private lateinit var hiddenStates: HiddenStatesInterface
-    private lateinit var config: MatteModuleConfig
+    private lateinit var config: MatteConfig
     private val rvmInput = arrayOfNulls<ByteBuffer>(5)
     private val rvmOutput = mutableMapOf<Int, ByteBuffer>()
 
-    override fun configure(newConfig: MatteModuleConfig){
+    override fun configure(newConfig: MatteConfig) = runner.run { configureImpl(newConfig) }
+    override fun run(io: MatteIO, count: Int) = runner.run { runImpl(io, count) }
+    override fun reset() = runner.run { resetImpl() }
+    override fun close() = runner.run { closeImpl() }.also { runner.shutdown() }
+
+    private fun configureImpl(newConfig: MatteConfig){
         if(!::config.isInitialized){
             config = newConfig
             matteModel.configure(config.runtimeConfig)
             initializeHiddenStates()
+            matteModel.logSignature()
             Log.d(TAG, "configure: Matte Module configured with:\nResolution: ${config.height}x${config.width}\nVariant: ${config.variant}\nDownsampleRatio: ${config.downsampleRatio}")
             return
         }
@@ -42,13 +52,17 @@ class MatteModule(
                     oldConfig.variant != newConfig.variant ||
             oldConfig.downsampleRatio != newConfig.downsampleRatio
 
-        reset()
+        // resetImpl(), not reset(): reset() re-enters `runner`, which is a single-thread executor -
+        // calling it from a task already running on that thread would deadlock waiting for a
+        // second task the executor cannot schedule until this one returns.
+        resetImpl()
         config = newConfig
         if(needsNewHiddenStates){
             hiddenStates.close()
             initializeHiddenStates()
         }
         matteModel.configure(config.runtimeConfig)
+        matteModel.logSignature()
         Log.d(TAG, "configure: Matte Module configured with:\nResolution: ${config.height}x${config.width}\nVariant: ${config.variant}\nDownsampleRatio: ${config.downsampleRatio}")
     }
 
@@ -88,7 +102,7 @@ class MatteModule(
         Log.d(TAG, "runRVM: RVM executed and Hidden states passed in ${System.currentTimeMillis() - startTime} ms")
     }
 
-    override fun run(io: MatteIO, count: Int){
+    private fun runImpl(io: MatteIO, count: Int){
         val inputImage = io.inputImage
         val outputForeground = io.outputForeground
         val outputAlphaMatte = io.outputAlphaMatte
@@ -113,13 +127,13 @@ class MatteModule(
         Log.d(TAG, "run: Matting for $count frames executed")
     }
 
-    override fun reset(){
+    private fun resetImpl(){
         hiddenStates.reset()
         hiddenStates.rewind()
         Log.d(TAG, "reset: Matte Module reset")
     }
 
-    override fun close(){
+    private fun closeImpl(){
         matteModel.close()
         hiddenStates.close()
         Log.d(TAG, "close: Matte Module closed and cleared")

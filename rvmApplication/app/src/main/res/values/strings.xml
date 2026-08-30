@@ -1,25 +1,54 @@
 <resources>
     <string name="app_name">RVM</string>
 
-    <string name="select_video">Select Video</string>
-    <string name="relight">Relight</string>
     <string name="reset">Reset</string>
-    <string name="input_video_label">Input Video</string>
-    <string name="output_video_label">Processed Video</string>
+    <string name="input_video_label">Input</string>
+    <string name="output_video_label">Output</string>
+    <string name="no_video_selected">No video selected</string>
+    <string name="configure">Configure</string>
+    <string name="apply">Apply</string>
+    <string name="cancel">Cancel</string>
+    <string name="compute_device_label">Compute device</string>
+    <string name="resolution_label">Resolution</string>
+    <string name="backbone_label">Backbone</string>
+    <string name="downsample_ratio_label">Downsample ratio</string>
+    <string name="threads_label">Threads: %1$d</string>
+    <string name="model_file_label">Model file</string>
+    <string name="progress_caption">Frame %1$d / %2$d · %3$d%%</string>
+    <string name="reset_confirm_title">Stop matting?</string>
+    <string name="reset_confirm_message">A matting run is in progress. Resetting will stop it and clear the current video and progress.</string>
+    <string name="downsample_auto_label">Auto</string>
+    <string name="downsample_percent_format">%1$d%%</string>
+    <string name="downsample_auto_ratio_format">Auto (%1$.2f)</string>
+    <string name="completion_stats">Done in %1$.1fs · %2$d ms/frame avg</string>
 
-    <string name="error_no_video">Please select a video first.</string>
     <string name="error_selection_cancelled">Video selection cancelled.</string>
-    <string name="error_decode_failed">Failed to decode the video.</string>
-    <string name="error_encode_failed">Failed to encode the processed video.</string>
-    <string name="error_invalid_buffer">Processed buffer has an invalid size.</string>
-    <string name="error_processing_failed">Video processing failed.</string>
-    <string name="error_out_of_memory">Video is too large to process in memory. Try a shorter or lower-resolution clip.</string>
-    <string name="error_playback">Could not play the video (error %1$d).</string>
 
-    <string name="status_processing">Processing video…</string>
-    <string name="status_decoding">Decoding frames… %1$d/%2$d</string>
-    <string name="status_packing">Preparing buffer… %1$d/%2$d</string>
-    <string name="status_encoding">Encoding frames… %1$d/%2$d</string>
-    <string name="status_done">Done. Playing processed video.</string>
-    <string name="status_truncated">Note: only the first %1$d frames were processed.</string>
+    <string name="home_tagline">Subject from background, entirely on-device.</string>
+    <string name="home_video_title">Video Matte</string>
+    <string name="home_video_subtitle">Pick a clip and process it on-device</string>
+    <string name="home_live_title">Live Matte</string>
+    <string name="home_live_subtitle">Real-time camera preview</string>
+    <string name="home_live_badge">Coming soon</string>
+    <string name="coming_soon">Live matting is coming soon.</string>
+    <string name="logo_content_description">RVM logo</string>
+    <string name="back">Back</string>
+
+    <string name="action_import">Import</string>
+    <string name="action_matte">Matte</string>
+    <string name="configure_label">Model</string>
+    <string name="configure_content_description">Model settings</string>
+    <string name="status_idle_hint">Import a video to begin.</string>
+    <string name="status_ready_hint">Ready — tap Matte to run.</string>
+    <string name="config_summary">%1$s · %2$dp · ds %3$s · %4$s · %5$d threads</string>
+    <string name="config_applied">Configuration applied</string>
+    <string name="output_matte">Matte</string>
+    <string name="output_foreground">Foreground</string>
+    <string name="output_both">Composite</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="action_save">Save</string>
+    <string name="save_content_description">Save output videos to gallery</string>
+    <string name="saved_to_gallery">Saved to Movies/RVM</string>
+    <string name="save_failed">Couldn\'t save: %1$s</string>
 </resources>

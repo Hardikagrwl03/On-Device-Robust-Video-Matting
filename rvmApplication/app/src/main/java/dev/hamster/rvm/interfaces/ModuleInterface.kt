@@ -2,12 +2,12 @@ package dev.hamster.rvm.interfaces
 
 /**
  * Contract every on-device inference module (e.g. MatteModule) must satisfy, generic over its
- * own [ModuleConfigInterface] config type and its own [IO] input/output data class, so each
+ * own [ConfigInterface] config type and its own [IO] input/output data class, so each
  * module can define whatever named input/output tensors it actually has (one input and two
  * outputs for matting, a single input/output for something else, ...) while still being driven
  * polymorphically, and callers keep readable, named fields instead of positional buffers.
  */
-interface ModuleInterface<Config : ModuleConfigInterface, IO> {
+interface ModuleInterface<Config : ConfigInterface, IO> {
     /**
      * Applies [newConfig]. Implementations should diff against the previous config and only
      * rebuild what actually changed (e.g. the interpreter, hidden-state buffers).
