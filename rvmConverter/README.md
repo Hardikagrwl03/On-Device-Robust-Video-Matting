@@ -21,8 +21,10 @@ specifically to be fully compatible with the TFLite GPU delegate.
   - [`verify.py` — check a `.tflite` against PyTorch](#verifypy--check-a-tflite-against-pytorch)
   - [`compare.py` — check `model_gpu` against `model`](#comparepy--check-model_gpu-against-model)
   - [`benchmark/` — on-device CPU/GPU benchmarking](#benchmark--on-device-cpugpu-benchmarking)
+  - [`analysis/visualize.py` — render a `.tflite`'s op graph](#analysisvisualizepy--render-a-tflites-op-graph)
   - [`scripts/` — user-friendly wrappers](#scripts--user-friendly-wrappers)
 - [The `model` vs. `model_gpu` split](#the-model-vs-model_gpu-split)
+- [`run.sh` — the whole pipeline in one command](#runsh--the-whole-pipeline-in-one-command)
 - [Typical workflow](#typical-workflow)
 - [Claude Code skills](#claude-code-skills)
 - [Gotchas](#gotchas)
@@ -70,6 +72,13 @@ Every script under `scripts/` activates the `rvm-convert` env for you (via
 `conda activate rvm-convert`), so once it exists under that exact name you
 don't need to activate it by hand.
 
+`netron`/`selenium` (also in both files) are only used by
+[`analysis/visualize.py`](#analysisvisualizepy--render-a-tflites-op-graph);
+everything else (convert/verify/compare/benchmark) works without them. That
+script also needs a real Chrome/Chromium binary on the machine (`google-chrome`,
+`google-chrome-stable`, `chromium`, or `chromium-browser` on `PATH`) — Selenium
+downloads a matching driver for it automatically.
+
 ### 2. Checkpoints
 
 `RobustVideoMatting/checkpoints/` is gitignored and empty on a fresh clone.
@@ -113,21 +122,26 @@ rvmConverter/
 │   ├── model_gpu/                #   parallel copy, edited for TFLite GPU-delegate compatibility
 │   └── checkpoints/               #   gitignored; put rvm_resnet50.pth / rvm_mobilenetv3.pth here
 ├── wrapper.py                    # RVMWrapper: the nn.Module actually traced/exported
+├── run.sh                        # chains convert -> compare -> verify -> benchmark -> visualize
 ├── convert.py                    # PyTorch checkpoint -> .tflite
 ├── verify.py                     # exported .tflite vs. PyTorch, numerical check
 ├── compare.py                    # model vs. model_gpu, numerical check (pure PyTorch)
 ├── scripts/                      # user-friendly wrappers (env activation + cwd handled)
 │   ├── convert.sh
 │   ├── verify.sh
-│   └── benchmark.sh
+│   ├── compare.sh
+│   ├── benchmark.sh
+│   └── visualize.sh
 ├── benchmark/                    # on-device CPU/GPU benchmarking via adb
 │   ├── benchmark_cpu.sh
 │   ├── benchmark_gpu.sh
 │   ├── binary/                   # prebuilt per-ABI TFLite benchmark tools (see Setup step 3)
-│   └── <original|gpu>/<cpu|gpu>/*.log   # generated logs, gitignored
+│   └── <original|gpu>/<cpu|gpu>/*.log   # generated logs -- tracked, not gitignored (see Gotchas)
 ├── tflite_models/                # convert.py's output, gitignored
 │   └── <original|gpu>/*.tflite
-├── analysis/                     # generated op-graph visualizations, gitignored
+├── analysis/
+│   ├── visualize.py              # .tflite -> op-graph SVG/PNG (via headless-Chrome + netron)
+│   └── <original|gpu>/*.svg      # generated visualizations -- tracked, not gitignored (see Gotchas)
 ├── .claude/skills/                # Claude Code skills documenting this toolkit's workflows
 ├── environment.yaml               # conda env export
 ├── requirements.txt               # pip equivalent, with pinning rationale
@@ -266,11 +280,12 @@ matching binary from `benchmark/binary/` (see [Setup step
 3](#3-android-device-optional-for-benchmarking-only) for where these come
 from), then pushes it and the given `.tflite` to
 `/data/local/tmp/rvm_benchmark/` on the device via `adb` (`-s <device>` only
-if a device is given) and runs it — `benchmark_cpu.sh` with
-`--num_threads=10`, `benchmark_gpu.sh` with `--use_gpu=true` — both with
-`--enable_op_profiling=true --verbose=true`, merging stdout **and** stderr
-into the saved log (stderr is where the important `ERROR:` diagnostics
-live).
+if a device is given) and runs it — `benchmark_gpu.sh` adds
+`--use_gpu=true`, both use `--num_runs=10 --enable_op_profiling=true
+--verbose=true` (the shared `--num_runs=10` keeps CPU and GPU timings
+directly comparable — same iteration count on both), merging stdout **and**
+stderr into the saved log (stderr is where the important `ERROR:`
+diagnostics live).
 
 Logs mirror the model's location under `tflite_models/`: a model at
 `tflite_models/<source>/foo.tflite` produces
@@ -290,6 +305,29 @@ flat `benchmark/<cpu|gpu>/foo_<device>.log`.
 - `Timings (microseconds): count=N ... avg=...` — the headline inference
   time, at the end of the log.
 
+### `analysis/visualize.py` — render a `.tflite`'s op graph
+
+```bash
+python analysis/visualize.py --tflite <path/to/model.tflite> [options]   # or: ./scripts/visualize.sh ...
+```
+
+Renders a `.tflite`'s op graph to a self-contained SVG (or PNG, via
+`--format png`) — the same view [netron](https://netron.app/) shows in a
+browser, but produced headlessly for scripting/CI use: it starts netron's
+own local-webserver viewer, drives it in headless Chrome via Selenium, waits
+for the graph to finish laying out, then calls the exact in-page function
+netron's own "Export as SVG"/"Export as PNG" menu action calls (rather than
+screenshotting the canvas) so the file is properly cropped and
+self-contained. See the module docstring for the full mechanics and why a
+screenshot wouldn't do.
+
+`--output` defaults to `analysis/<source>/<model-basename>.<format>`, where
+`<source>` (`original`/`gpu`) is inferred from `--tflite`'s path — same
+convention as `convert.py`/`verify.py`. Useful for visually spotting which
+node a GPU-delegate-unsupported op comes from (see
+[`rvm-gpu-delegate-fix`](#claude-code-skills)) or just for inspecting a
+model's structure.
+
 ### `scripts/` — user-friendly wrappers
 
 Thin wrappers that activate the `rvm-convert` conda env and `cd` to the
@@ -299,13 +337,16 @@ then forward everything else through:
 ```bash
 ./scripts/convert.sh [convert.py options]
 ./scripts/verify.sh --tflite <path> [verify.py options]
+./scripts/compare.sh --variant {resnet50,mobilenetv3} [compare.py options]
 ./scripts/benchmark.sh <cpu|gpu> <model.tflite> [device_name_or_id]
+./scripts/visualize.sh --tflite <path> [visualize.py options]
 ```
 
-`convert.sh`/`verify.sh` pass `--help` straight through to the underlying
-Python CLI. `benchmark.sh` has its own `-h`/`--help` (it has one more
-required argument — the backend — that the other two don't) and dispatches
-to `benchmark/benchmark_cpu.sh` or `benchmark_gpu.sh`.
+`convert.sh`/`verify.sh`/`compare.sh`/`visualize.sh` pass `--help` straight
+through to the underlying Python CLI. `benchmark.sh` has its own
+`-h`/`--help` (it has one more required argument — the backend — that the
+others don't) and dispatches to `benchmark/benchmark_cpu.sh` or
+`benchmark_gpu.sh`.
 
 ## The `model` vs. `model_gpu` split
 
@@ -345,6 +386,33 @@ See `.claude/skills/rvm-gpu-delegate-fix/SKILL.md` for the step-by-step
 recipe used to find and fix these (useful if a future op turns out to be
 unsupported too).
 
+## `run.sh` — the whole pipeline in one command
+
+```bash
+./run.sh [options]   # convert -> compare -> verify -> benchmark -> visualize, for one variant
+```
+
+Chains all five tools above for a single variant/source/resolution
+combination, so a full round-trip from checkpoint to on-device numbers is
+one command instead of five. Defaults to `--variant mobilenetv3 --source gpu
+--backend gpu` (the GPU-delegate-compatible build, benchmarked on GPU); see
+`./run.sh --help` for the full option list (`--checkpoint`,
+`--height`/`--width`/`--downsample-ratio`, `--output-dir`, `--device`,
+`--format`). It reads the `.tflite` path back out of `convert.sh`'s own
+"conversion successful: ..." output rather than recomputing the naming
+convention itself, so it can't drift out of sync with `convert.py`.
+
+`--source`/`--output` are passed explicitly to `verify.sh`/`visualize.sh`
+rather than left to their own path-based inference, since that inference
+only works when `--output-dir` happens to keep `gpu`/`original` as a path
+component — `run.sh` already knows the real answer regardless of
+`--output-dir`, so it doesn't guess.
+
+Each step's own script (`./scripts/convert.sh --help`, etc.) exposes more
+options than `run.sh` forwards — drop to running them individually (see
+[Typical workflow](#typical-workflow)) for anything not covered here, e.g.
+converting `--variant all` in one call.
+
 ## Typical workflow
 
 ```bash
@@ -372,6 +440,8 @@ operational detail than this README:
 - `rvm-benchmark` — on-device benchmarking in depth
 - `rvm-gpu-delegate-fix` — the recipe for diagnosing and fixing a new
   GPU-delegate-unsupported op, with the three fixes above as worked examples
+  (covers `compare.py`/`compare.sh` and `analysis/visualize.py`/`visualize.sh`
+  as part of that workflow)
 
 ## Gotchas
 
@@ -403,6 +473,13 @@ operational detail than this README:
   you're editing `run_tflite()`/`run_pytorch()` in `verify.py`, keep going
   through the signature, not `get_input_details()`/`get_output_details()`
   sorted by `index`.
-- `benchmark/`, `tflite_models/`, and `analysis/` are all gitignored
-  (generated outputs); `benchmark/binary/benchmark_model` and the `.sh`
-  scripts themselves are tracked.
+- Only `tflite_models/` and `RobustVideoMatting/checkpoints/` are gitignored
+  (plus the blanket `*.pth`/`*.tflite` globs). `benchmark/*.log` and
+  `analysis/*.svg`/`*.png` are generated too, but are deliberately **not**
+  gitignored — this repo commits its own benchmark/visualization history
+  instead of treating it as disposable. Don't assume a clean `git status`
+  after running `benchmark_*.sh`/`visualize.sh`; `git add` the new/changed
+  logs and images if you want them kept.
+- `analysis/visualize.py` needs a real Chrome/Chromium binary installed on
+  the machine (not just the `selenium`/`netron` pip packages) — see
+  [Setup step 1](#1-conda-environment).

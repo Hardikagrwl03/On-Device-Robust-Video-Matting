@@ -22,10 +22,11 @@ exec. Needs a device connected (see `rvm-setup`). Prefer the wrapper script:
 applies its own default/error behavior for multiple/zero devices). Get
 connected device names/ids from `adb devices -l`.
 
-This dispatches to `benchmark/benchmark_cpu.sh` (`--num_threads=10
+This dispatches to `benchmark/benchmark_cpu.sh` (`--num_runs=10
 --enable_op_profiling=true --verbose=true`) or `benchmark/benchmark_gpu.sh`
-(`--use_gpu=true`, same profiling flags) directly if you need to run one of
-those without the `<cpu|gpu>` dispatch layer. Both push the binary + model to
+(same flags, plus `--use_gpu=true`) directly if you need to run one of those
+without the `<cpu|gpu>` dispatch layer -- both use the same `--num_runs=10`
+so CPU and GPU timings stay directly comparable. Both push the binary + model to
 `/data/local/tmp/rvm_benchmark/` on the device and merge the binary's stdout
 *and* stderr (`2>&1`) into the saved log -- stderr is where the important
 `ERROR:` lines live (unsupported-op lists, delegate failures), so don't strip

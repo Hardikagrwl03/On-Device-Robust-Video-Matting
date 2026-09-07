@@ -62,6 +62,6 @@ mkdir -p "$OUT_DIR"
 
 adb "${ADB_ARGS[@]}" shell "$REMOTE_DIR/benchmark_model" \
     --graph="$REMOTE_DIR/$MODEL_NAME" \
-    --num_threads=10 \
+    --num_runs=10 \
     --enable_op_profiling=true \
     --verbose=true 2>&1 | tee "$LOG"

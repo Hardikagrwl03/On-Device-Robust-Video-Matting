@@ -60,7 +60,7 @@ stopped sharing an identical trailing op. Keep going through the signature
 if you touch `run_tflite()`/`run_pytorch()`.
 
 If verifying a `--source gpu` model whose op-graph you just changed (see
-`rvm-gpu-delegate-fix`), also run `compare.py` first -- it checks
+`rvm-gpu-delegate-fix`), also run `./scripts/compare.sh` first -- it checks
 `RobustVideoMatting.model` against `.model_gpu` in pure PyTorch (no TFLite
 involved), which isolates whether a divergence is from your PyTorch-level
 edit or from the TFLite export/runtime itself.

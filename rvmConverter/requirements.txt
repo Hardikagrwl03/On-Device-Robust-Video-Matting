@@ -18,3 +18,9 @@ ai-edge-litert==2.1.6
 av==13.1.0
 pims==0.7
 tqdm==4.67.1
+
+# Used only by analysis/visualize.py to render a .tflite's op graph to an
+# SVG/PNG (drives headless Chrome against netron's own local-webserver
+# viewer). Not needed for convert/verify/compare/benchmark.
+netron==9.2.4
+selenium==4.48.0

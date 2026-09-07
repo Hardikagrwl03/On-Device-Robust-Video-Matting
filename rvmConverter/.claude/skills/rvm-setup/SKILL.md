@@ -65,12 +65,24 @@ least one Android device reachable:
 adb devices -l
 ```
 
-`benchmark/binary/benchmark_model` is a prebuilt **arm64-v8a** TFLite
-benchmark binary (checked into the repo, not gitignored) -- it will fail with
-a plain "No such file or directory" on a 32-bit-only (`armeabi-v7a`) device;
-that's an ABI mismatch, not a bug. Check `adb shell getprop
-ro.product.cpu.abilist` on a device before spending time debugging that
-error.
+`benchmark/binary/` ships one prebuilt TFLite `benchmark_model` binary per
+ABI (`android_aarch64_benchmark_model` for `arm64-v8a`,
+`android_arm_benchmark_model` for `armeabi-v7a`/`armeabi`) -- checked into
+the repo, not gitignored. `benchmark_cpu.sh`/`benchmark_gpu.sh` detect the
+connected device's ABI (`adb shell getprop ro.product.cpu.abi`) and push the
+matching one automatically; a device on neither ABI gets an explicit
+"Unsupported device architecture" error rather than a confusing push/exec
+failure.
+
+## 4. Op-graph visualization (optional)
+
+Only needed for `analysis/visualize.py`/`scripts/visualize.sh` (used most in
+the `rvm-gpu-delegate-fix` workflow). It needs `netron`/`selenium` (already
+pinned in `environment.yaml`/`requirements.txt`) *and* a real Chrome or
+Chromium binary on the machine (`google-chrome`, `google-chrome-stable`,
+`chromium`, or `chromium-browser` on `PATH`) -- it drives that browser
+headlessly to trigger netron's own SVG/PNG export rather than screenshotting
+it. Not needed for convert/verify/compare/benchmark.
 
 ## Repo map
 
@@ -78,6 +90,8 @@ error.
 - `verify.py` -- exported `.tflite` vs PyTorch numerical check (see `rvm-verify`)
 - `compare.py` -- `RobustVideoMatting.model` vs `.model_gpu` numerical check (see `rvm-gpu-delegate-fix`)
 - `benchmark/` -- on-device CPU/GPU benchmarking via `adb` (see `rvm-benchmark`)
+- `analysis/visualize.py` -- renders a `.tflite`'s op graph to SVG/PNG (see `rvm-gpu-delegate-fix`)
 - `scripts/` -- user-friendly wrappers around the above (env activation + cwd handled for you)
+- `run.sh` -- chains convert -> compare -> verify -> benchmark -> visualize for one variant/source/resolution in a single command (see the README's `run.sh` section for its flags)
 - `RobustVideoMatting/model/` -- **unmodified** upstream RVM source; never edit
 - `RobustVideoMatting/model_gpu/` -- a parallel, editable copy for GPU-delegate-compatibility fixes (see `rvm-gpu-delegate-fix`)
