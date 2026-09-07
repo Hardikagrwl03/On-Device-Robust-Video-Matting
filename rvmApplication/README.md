@@ -2,6 +2,23 @@
 
 An Android application that runs [Robust Video Matting (RVM)](https://github.com/PeterL1n/RobustVideoMatting) fully on-device via TensorFlow Lite / LiteRT to produce an alpha matte, a foreground extraction, and their composite for a user-selected video, with GPU/NNAPI acceleration where available.
 
+## Download
+
+**[Download rvm-1.0.apk](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/app-v1.0/rvm-1.0.apk)** — from release
+[`app-v1.0`](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/tag/app-v1.0)
+([all releases](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases))
+
+| | |
+| --- | --- |
+| Version | 1.0 (`versionCode` 1) |
+| Requires | Android 15+ (`minSdk 35`), 64-bit ARM (`arm64-v8a`) |
+| Size | 209 MB |
+| SHA-256 | `e5681d7145c24def0e000ff68be67a21aba38acc8531f37dff725b38200c4d1d` |
+
+The APK contains no model weights. On first launch the app downloads ~120 MB of them over the
+network, so **use Wi-Fi the first time**; it becomes usable as soon as the first (~15 MB) model
+lands.
+
 > **Just want to use the app?** See **[USER_GUIDE.md](USER_GUIDE.md)** — installing, first run,
 > and every setting explained without reference to the code. The rest of this README is for
 > developers working on the app itself.
@@ -171,6 +188,34 @@ sha256sum dist/*.apk        # publish these alongside the release
 
 Attach only `rvm-<version>.apk` to the release. The debug build is `debuggable` and signed with the
 shared Android debug key — fine locally, not something to hand to users.
+
+### Publishing to GitHub Releases
+
+Tags are prefixed by component, because this repository also publishes the model weights
+(`models-v1`) from the same release list — a bare `v1.0` would be ambiguous about what it versions.
+App releases use `app-v<version>`.
+
+```bash
+gh release create app-v<version> \
+  --target application \
+  --title "RVM Android App v<version>" \
+  --notes-file <notes>.md \
+  --draft \
+  dist/rvm-<version>.apk
+
+# verify the upload round-trips before anyone can download it
+gh release download app-v<version> -p 'rvm-<version>.apk' -D /tmp/verify
+sha256sum /tmp/verify/rvm-<version>.apk dist/rvm-<version>.apk   # must match
+
+gh release edit app-v<version> --draft=false
+```
+
+Publishing as a draft first is deliberate: the tag isn't created until the draft is published, so a
+bad upload can be discarded without leaving a tag behind, and the round-trip checksum catches a
+truncated 200 MB transfer before users do.
+
+Remember to bump **both** `versionCode` (must strictly increase for Android to accept an update) and
+`versionName` in `app/build.gradle.kts` before building.
 
 > **The keystore is irreplaceable.** Android will only install an update over an existing install if
 > it is signed with the same key. If `rvm-release.keystore` is lost, every existing user has to

@@ -76,7 +76,27 @@ sha256sum dist/*.apk
    publishing (see `rvm-app-verify`) -- uninstall first, since a debug-signed
    build is already there.
 
-6. Attach `rvm-<version>.apk` and publish its SHA-256 alongside.
+6. Publish. **Tags are component-prefixed** — this repo also publishes the model weights from the
+   same release list (`models-v1`), so a bare `v1.0` would be ambiguous. App releases are
+   `app-v<version>`; `v1.0` shipped as **`app-v1.0`**.
+
+```bash
+gh release create app-v<version> \
+  --target application \
+  --title "RVM Android App v<version>" \
+  --notes-file <notes>.md \
+  --draft \
+  dist/rvm-<version>.apk
+
+gh release download app-v<version> -p 'rvm-<version>.apk' -D /tmp/verify
+sha256sum /tmp/verify/rvm-<version>.apk dist/rvm-<version>.apk   # must match
+
+gh release edit app-v<version> --draft=false
+```
+
+Draft first, always: the tag is not created until a draft is published, so a bad upload can be
+discarded without leaving a tag behind, and the round-trip checksum catches a truncated 200 MB
+transfer before users hit it. Publish the SHA-256 in the release notes.
 
 ## Two things to get right
 
