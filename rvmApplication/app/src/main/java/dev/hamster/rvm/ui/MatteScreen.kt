@@ -173,7 +173,7 @@ fun MatteScreen(viewModel: MatteViewModel, onNavigateBack: () -> Unit) {
         bottomBar = {
             MatteActionBar(
                 isRunning = isRunning,
-                canRun = uiState.selectedVideoUri != null && !uiState.isConfiguring,
+                canRun = uiState.selectedVideoUri != null && !uiState.isConfiguring && !uiState.modelMissing,
                 onImport = { pickVideo.launch("video/*") },
                 onRunOrCancel = { if (isRunning) viewModel.cancel() else viewModel.runMatting() },
                 onReset = { if (isRunning) showResetConfirm = true else viewModel.reset() }
@@ -248,8 +248,13 @@ fun MatteScreen(viewModel: MatteViewModel, onNavigateBack: () -> Unit) {
         isRunning = isRunning,
         isConfiguring = uiState.isConfiguring,
         onApply = { newConfig ->
-            viewModel.updateConfig(newConfig) {
-                Toast.makeText(context, R.string.config_applied, Toast.LENGTH_SHORT).show()
+            viewModel.updateConfig(newConfig) { deviceCoercedToCpu ->
+                val message = if (deviceCoercedToCpu) {
+                    R.string.error_original_needs_cpu
+                } else {
+                    R.string.config_applied
+                }
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
             }
         },
         onDismiss = { showConfigSheet = false }
@@ -535,10 +540,10 @@ private fun StatusStrip(uiState: MatteUiState, modifier: Modifier = Modifier) {
                 )
             }
             else -> {
-                val hint = if (uiState.selectedVideoUri == null) {
-                    stringResource(R.string.status_idle_hint)
-                } else {
-                    stringResource(R.string.status_ready_hint)
+                val hint = when {
+                    uiState.modelMissing -> stringResource(R.string.status_no_model_hint)
+                    uiState.selectedVideoUri == null -> stringResource(R.string.status_idle_hint)
+                    else -> stringResource(R.string.status_ready_hint)
                 }
                 Text(
                     text = hint,

@@ -3,11 +3,13 @@ package dev.hamster.rvm.modelRunner
 import android.content.Context
 import android.util.Log
 import dev.hamster.rvm.matte.MatteModule
+import dev.hamster.rvm.models.ModelStore
 import dev.hamster.rvm.utils.SharedBuffer
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.nnapi.NnApiDelegate
-import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
@@ -87,7 +89,20 @@ class TFLiteModelRunner(
                 }
             }
         }
-        interpreter = Interpreter(model, options)
+        interpreter = try {
+            Interpreter(model, options)
+        } catch (e: IllegalArgumentException) {
+            // A delegate is mandatory once added: if the graph contains an op it doesn't
+            // implement, the delegate refuses to prepare and Interpreter's constructor throws
+            // rather than silently running those ops on CPU. `original`-source models hit this
+            // on the GPU delegate for exactly the ops the converter's model_gpu/ tree rewrites
+            // (GATHER_ND, RELU_0_TO_1, STABLEHLO_REDUCE_WINDOW), so every original + GPU pairing
+            // would otherwise be a hard crash. Degrade to CPU instead - slower, but numerically
+            // identical, and the alternative is killing the app for a legal selection.
+            Log.w(TAG, "loadModel: ${runtimeConfig.device} delegate rejected the graph, falling back to CPU", e)
+            releaseDelegates()
+            Interpreter(model, Interpreter.Options().apply { setNumThreads(runtimeConfig.numThreads) })
+        }
         Log.d(TAG,"loadModel: Interpreter Created")
     }
 
@@ -156,21 +171,33 @@ class TFLiteModelRunner(
     override fun close(){
         interpreter?.close()
         interpreter = null
+        releaseDelegates()
+        Log.d(TAG, "close: TFLite Model Runner closed along with delegates")
+    }
 
+    /** Closes whichever delegate is held, without touching the interpreter. */
+    private fun releaseDelegates(){
         gpuDelegate?.close()
         gpuDelegate=null
 
         nnApiDelegate?.close()
         nnApiDelegate=null
-        Log.d(TAG, "close: TFLite Model Runner closed along with delegates")
     }
+    /**
+     * Memory-maps a downloaded model out of [ModelStore]. Models are no longer bundled as assets:
+     * they are fetched on demand from the `models-v1` release into `filesDir/models/`.
+     *
+     * This runs on the `rvm-matte` confined thread (see [MatteModule]), which is fine for a
+     * memory-map. Nothing here may ever *download* -- that would block the confined thread on
+     * network I/O of unbounded duration.
+     */
     private fun loadModelFile(modelFileName: String): MappedByteBuffer {
-        val fileDescriptor = context.assets.openFd(modelFileName)
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+        val file = ModelStore(context).fileFor(modelFileName)
+        if (!file.exists()) throw FileNotFoundException("Model not downloaded: $modelFileName")
+        // The mapping outlives the channel, so closing it here is safe.
+        return RandomAccessFile(file, "r").use { raf ->
+            raf.channel.map(FileChannel.MapMode.READ_ONLY, 0, raf.length())
+        }
     }
 
     override fun logSignature() {

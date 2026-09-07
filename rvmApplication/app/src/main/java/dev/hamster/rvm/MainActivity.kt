@@ -14,12 +14,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import dev.hamster.rvm.models.ModelRepository
 import dev.hamster.rvm.ui.HomeScreen
 import dev.hamster.rvm.ui.MatteScreen
 import dev.hamster.rvm.ui.MatteViewModel
+import dev.hamster.rvm.ui.ModelsScreen
 import dev.hamster.rvm.ui.theme.RvmTheme
 
-private enum class RvmDestination { HOME, MATTE }
+private enum class RvmDestination { HOME, MATTE, MODELS }
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MatteViewModel by viewModels {
@@ -32,6 +34,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Idempotent and non-blocking: enqueues only the bootstrap models not already on disk,
+        // onto the repository's own scope. Safe to call on every launch.
+        ModelRepository.get(this).ensureBootstrapModels()
         enableEdgeToEdge()
         setContent {
             RvmTheme {
@@ -46,10 +51,13 @@ class MainActivity : ComponentActivity() {
                 }
                 when (destination) {
                     RvmDestination.HOME -> HomeScreen(
-                        isModelReady = !uiState.isConfiguring,
-                        onOpenVideoMatte = { destination = RvmDestination.MATTE }
+                        isModelReady = !uiState.isConfiguring && !uiState.modelMissing,
+                        modelMissing = uiState.modelMissing,
+                        onOpenVideoMatte = { destination = RvmDestination.MATTE },
+                        onOpenModels = { destination = RvmDestination.MODELS }
                     )
                     RvmDestination.MATTE -> MatteScreen(viewModel, onNavigateBack = { destination = RvmDestination.HOME })
+                    RvmDestination.MODELS -> ModelsScreen(onNavigateBack = { destination = RvmDestination.HOME })
                 }
             }
         }
