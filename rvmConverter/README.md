@@ -33,15 +33,43 @@ specifically to be fully compatible with the TFLite GPU delegate.
 
 If you just want ready-to-use `.tflite` files and don't need to build the
 conversion toolkit yourself, all exported models (`resnet50` and
-`mobilenetv3`, both `original` and `gpu` sources) are shared here:
+`mobilenetv3`, both `original` and `gpu` sources) are shared two ways:
 
 **[Pre-converted TFLite models (Google Drive)](https://drive.google.com/drive/folders/1VXIsAFNzCVJ-ylWkxmL_tJxKAAFb992K?usp=sharing)**
 
-Filenames follow the convention described in [Core concepts](#core-concepts)
-— `rvm_<variant>_<height>x<width>_ds_<ds>.tflite`. If you plan to run on a
-GPU delegate, use a `gpu`-source build (see
+Filenames there follow the convention described in [Core
+concepts](#core-concepts) — `rvm_<variant>_<height>x<width>_ds_<ds>.tflite`.
+If you plan to run on a GPU delegate, use a `gpu`-source build (see
 [The `model` vs. `model_gpu` split](#the-model-vs-model_gpu-split)); if
 you're only running on CPU, either source works.
+
+**[GitHub Release `models-v1`](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/tag/models-v1)**
+— the same 8 files, but as direct-download URLs suitable for fetching from
+app code at runtime instead of bundling every weight file into the app.
+Since a release's assets are flat (no subfolders), `<source>` is folded into
+the filename instead of being a parent directory:
+
+```
+https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_<source>_<variant>_<height>x<width>_ds_<ds>.tflite
+```
+
+| Variant | Source | `ds` | Size | Download |
+|---|---|---|---|---|
+| mobilenetv3 | gpu | `100` | ~15MB | [rvm_gpu_mobilenetv3_720x1280_ds_100.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_gpu_mobilenetv3_720x1280_ds_100.tflite) |
+| mobilenetv3 | gpu | `auto` | ~15MB | [rvm_gpu_mobilenetv3_720x1280_ds_auto.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_gpu_mobilenetv3_720x1280_ds_auto.tflite) |
+| resnet50 | gpu | `100` | ~103MB | [rvm_gpu_resnet50_720x1280_ds_100.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_gpu_resnet50_720x1280_ds_100.tflite) |
+| resnet50 | gpu | `auto` | ~103MB | [rvm_gpu_resnet50_720x1280_ds_auto.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_gpu_resnet50_720x1280_ds_auto.tflite) |
+| mobilenetv3 | original | `100` | ~16MB | [rvm_original_mobilenetv3_720x1280_ds_100.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_original_mobilenetv3_720x1280_ds_100.tflite) |
+| mobilenetv3 | original | `auto` | ~15MB | [rvm_original_mobilenetv3_720x1280_ds_auto.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_original_mobilenetv3_720x1280_ds_auto.tflite) |
+| resnet50 | original | `100` | ~104MB | [rvm_original_resnet50_720x1280_ds_100.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_original_resnet50_720x1280_ds_100.tflite) |
+| resnet50 | original | `auto` | ~103MB | [rvm_original_resnet50_720x1280_ds_auto.tflite](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/download/models-v1/rvm_original_resnet50_720x1280_ds_auto.tflite) |
+
+All 8 are at resolution `720x1280`. These URLs need no authentication (the
+repo is public) and redirect once (`302` → `objects.githubusercontent.com`)
+before serving the file, so a plain HTTP client with redirect-following is
+enough — no GitHub API call needed. A future third source (e.g. `dynamic`)
+would slot into the same `rvm_<source>_...` filename pattern, either
+uploaded onto this same release or under a new tag.
 
 ## Setup
 

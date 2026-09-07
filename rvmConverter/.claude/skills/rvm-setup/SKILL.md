@@ -11,6 +11,13 @@ and benchmark the result. Three things are gitignored and not in a fresh
 clone: the conda env, the `.pth` checkpoints, and (obviously) any exported
 `.tflite` files. Set those up first.
 
+If the actual goal is just getting a ready-to-use `.tflite` file (not
+developing/modifying the conversion toolkit itself), none of this setup is
+needed at all -- see the README's "Pre-converted models" section for direct
+downloads (a Google Drive folder and a GitHub Release, `models-v1`, with
+stable per-file URLs). Only continue below if you need to convert, verify,
+compare, or benchmark something yourself.
+
 ## 1. Conda environment
 
 `environment.yaml` at the repo root is an exported, portable spec (no
