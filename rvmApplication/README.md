@@ -1,6 +1,14 @@
-# Application for On Device Video Depth Anything
+# Application for On-Device Robust Video Matting
 
 An Android application that runs [Robust Video Matting (RVM)](https://github.com/PeterL1n/RobustVideoMatting) fully on-device via TensorFlow Lite / LiteRT to produce an alpha matte, a foreground extraction, and their composite for a user-selected video, with GPU/NNAPI acceleration where available.
+
+> **Just want to use the app?** See **[USER_GUIDE.md](USER_GUIDE.md)** — installing, first run,
+> and every setting explained without reference to the code. The rest of this README is for
+> developers working on the app itself.
+
+| Home | Composite output | Models |
+| :---: | :---: | :---: |
+| ![Home screen](docs/images/home.png) | ![Composite output](docs/images/output-composite.png) | ![Models page](docs/images/models.png) |
 
 ## Overview
 
@@ -11,6 +19,31 @@ The user picks a video from their device, the app decodes it frame-by-frame, run
 - their **composite** — `foreground × alpha` per pixel, i.e. the subject matted onto black with soft, opacity-weighted edges rather than a hard cutout.
 
 All three play back in-app, kept in sync with the input video, and can be saved to the device gallery in one tap.
+
+### Measured performance
+
+On a Galaxy S23 FE (Snapdragon 8 Gen 1), 720x1280 input, `ds auto`, GPU delegate:
+
+| Model | Per frame | 7 s clip (213 frames) |
+| --- | --- | --- |
+| `gpu` / mobilenetv3 | ~320 ms | ~68 s |
+| `gpu` / resnet50 | ~420 ms | ~90 s |
+
+An `original`-source model is forced onto the CPU and is substantially slower; it exists for
+comparison against the `gpu` rewrites, not for production use.
+
+### Known limitations
+
+These are real constraints of the current pipeline, not bugs to be surprised by:
+
+- **Outputs carry no audio track.** `VideoFrameEncoder` writes video only.
+- **Outputs are always `config.width` x `config.height` (1280x720)** regardless of the input's
+  dimensions, since the encoders are started from the config, not the source video.
+- **The pipeline effectively assumes a 720x1280 input.** `VideoFrameDecoder.getNextFrame` loads a
+  bitmap at the *source* video's dimensions into a buffer sized from the config, so a
+  differently-shaped input under- or over-fills it.
+- **Model downloads do not resume.** A transfer killed with the process restarts from zero.
+- **Live Matte is not implemented** — the tile shows a "coming soon" toast.
 
 ## Features
 
@@ -30,6 +63,7 @@ The app uses a fixed brand colour scheme (not Material You dynamic colour) so it
 - Android Studio (Narwhal or newer recommended) with the Android SDK.
 - JDK 11.
 - An Android device or emulator running **API 35 (Android 15) or newer** (`minSdk = 35`, `targetSdk = 36`, `compileSdk = 37`).
+- An **`arm64-v8a`** device, or an **`x86_64`** emulator. Those are the only two ABIs packaged: TFLite's native libraries are ~73 MB *per ABI*, and at `minSdk 35` nothing can reach the other two (no Android 15 device ships 32-bit-only ARM, and there are no x86 Android phones), so `armeabi-v7a` and `x86` are excluded via `ndk { abiFilters }` — see `app/build.gradle.kts`.
 - Gradle 9.5 (fetched automatically via the Gradle wrapper), AGP 9.3.1, Kotlin 2.2.10.
 
 ## Getting Started
@@ -95,7 +129,69 @@ install will reject the new file as a size mismatch.
 > about. Since the `gpu` rewrites are numerically exact, a `gpu`-source model is never worse than
 > an `original` one at any compute device.
 
+## Building a release APK
+
+Release builds are signed with a keystore that is **deliberately not in version control**
+(`.gitignore` excludes `*.keystore`, `*.jks` and `keystore.properties`). `app/build.gradle.kts`
+reads `keystore.properties` from the project root:
+
+```properties
+storeFile=rvm-release.keystore
+storePassword=...
+keyAlias=rvm-release
+keyPassword=...
+```
+
+If that file is absent the project still builds — `assembleRelease` simply produces an **unsigned**
+APK — so a fresh clone isn't blocked by a missing secret.
+
+```bash
+./gradlew assembleDebug assembleRelease
+# app/build/outputs/apk/debug/app-debug.apk
+# app/build/outputs/apk/release/app-release.apk
+```
+
+Both are universal APKs carrying `arm64-v8a` + `x86_64` (see Requirements), so a single file can be
+attached to a GitHub release and installed by any supported device. Signing uses the v3 scheme
+(v1/v2 are redundant at `minSdk 35`, and v3 is what permits key rotation later). Verify with:
+
+```bash
+$ANDROID_HOME/build-tools/<version>/apksigner verify -v app/build/outputs/apk/release/app-release.apk
+```
+
+Stage the artifacts with release naming — the release APK carries **no `-release` suffix**; only
+non-default variants are qualified:
+
+```bash
+mkdir -p dist
+cp app/build/outputs/apk/release/app-release.apk dist/rvm-<version>.apk
+cp app/build/outputs/apk/debug/app-debug.apk     dist/rvm-<version>-debug.apk
+sha256sum dist/*.apk        # publish these alongside the release
+```
+
+Attach only `rvm-<version>.apk` to the release. The debug build is `debuggable` and signed with the
+shared Android debug key — fine locally, not something to hand to users.
+
+> **The keystore is irreplaceable.** Android will only install an update over an existing install if
+> it is signed with the same key. If `rvm-release.keystore` is lost, every existing user has to
+> uninstall before they can take an update. Back it up together with `keystore.properties`
+> **outside this repository** — a gitignored file is still destroyed by `git clean -xdf`.
+
 ## Project Structure
+
+Docs and assets outside the source tree:
+
+```
+README.md            # this file -- developer-facing
+USER_GUIDE.md        # end-user walkthrough
+docs/
+├── images/          # screenshots used by both documents
+├── model-download-plan.md
+├── threading-plan.md
+├── ui-plan.md
+└── ui-redesign-plan.md
+.claude/skills/      # six project-scoped Claude Code skills (see below)
+```
 
 ```
 app/src/main/java/dev/hamster/rvm/
@@ -163,6 +259,14 @@ Inference modules follow a small, generic pattern so new models (segmentation, s
 
 ## Usage
 
+For an end-user walkthrough with screenshots, see **[USER_GUIDE.md](USER_GUIDE.md)**. In brief:
+
+| Matting screen | Run in progress |
+| :---: | :---: |
+| ![Matting screen](docs/images/matte-empty.png) | ![Run in progress](docs/images/running.png) |
+| **Matte output** | **Model settings** |
+| ![Matte output](docs/images/output-matte.png) | ![Model settings](docs/images/config-sheet.png) |
+
 1. Launch the app. On a fresh install it starts downloading the two default models straight away; the **Video Matte** tile shows that progress and becomes available as soon as the first one lands. Tap **Models** to browse and install any of the eight published builds, or **Live Matte** for a "coming soon" toast — real-time camera matting isn't implemented yet.
 2. Tap **Video Matte**.
 3. Tap **Import** to pick a video from the device.
@@ -199,6 +303,24 @@ To watch which thread each component is running on (all of `MatteModule`, `TFLit
 ```
 adb shell ps -T -p $(adb shell pidof dev.hamster.rvm) | grep rvm-
 ```
+
+## Claude Code skills
+
+`.claude/skills/` holds six project-scoped skills (auto-discovered by Claude Code from this repo,
+no setup needed) documenting the workflows and invariants in more operational detail than this
+README:
+
+- `rvm-app-setup` — fresh clone to running app: requirements, supported ABIs, what happens on first
+  launch, and what's deliberately absent from a clone
+- `rvm-app-architecture` — the generic module pattern, thread confinement, and the traps that
+  deadlock, crash, or silently corrupt config if you edit around them
+- `rvm-app-models` — the on-demand model system end to end, how to add or update a model, and why
+  `source` is not the compute device
+- `rvm-app-ui` — Compose conventions: the fixed brand theme, navigation, and the card/badge/toast
+  patterns to copy
+- `rvm-app-verify` — driving the app from `adb` to verify a change on a real device, including what
+  to actually assert and how to test the offline path properly
+- `rvm-app-release` — signing, ABI packaging, artifact naming, and what not to publish
 
 ## Adding a New Module
 
