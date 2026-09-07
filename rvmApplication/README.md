@@ -14,9 +14,10 @@ All three play back in-app, kept in sync with the input video, and can be saved 
 
 ## Features
 
-- On-device video matting using RVM, no network calls or server-side inference.
+- On-device video matting using RVM — inference is entirely local; the network is used only to fetch model weights.
+- Models are **downloaded on demand** from the [`models-v1` GitHub release](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/tag/models-v1) rather than bundled in the APK, with an in-app Models page to browse and install all eight builds; the two `gpu`/`auto` models are fetched automatically on first launch. See `docs/model-download-plan.md`.
 - Selectable compute backend per run: GPU delegate, NNAPI (NPU), CPU, or automatic fallback (NNAPI → GPU → CPU).
-- Two RVM backbones (ResNet50, MobileNetV3) and configurable resolution/downsample ratio, each resolving to a matching `.tflite` asset actually present in `assets/` (the config UI can't offer a combination that doesn't exist).
+- Two RVM backbones (ResNet50, MobileNetV3), two converter sources (`gpu`/`original`) and configurable resolution/downsample ratio, each resolving to a matching `.tflite` actually **downloaded** into `filesDir/models/` (the config UI can't offer a combination that isn't installed).
 - Frame-accurate hidden-state passing between inference calls, matching RVM's recurrent architecture.
 - One decode/inference pass produces all three outputs — alpha matte, foreground, and their premultiplied composite — switchable in-app and played back in sync with the input; all three (plus the input) can be saved to `Movies/RVM` in the gallery.
 - Native Jetpack Compose UI: a home screen, a non-scrolling matting screen with synchronized Media3 input/output preview playback, and Save-to-gallery — see `docs/ui-redesign-plan.md` for the full design.
@@ -34,28 +35,65 @@ The app uses a fixed brand colour scheme (not Material You dynamic colour) so it
 ## Getting Started
 
 1. **Clone the repository** and open the `application/rvmApplication` folder in Android Studio.
-2. **Download the TFLite models** (see below) and place them in `app/src/main/assets/`.
-3. **Sync and build** — Android Studio will resolve dependencies (TensorFlow Lite, LiteRT, Jetpack Compose, Media3, AndroidX) automatically via Gradle.
-4. **Run** on a device/emulator meeting the API level requirement above.
+2. **Sync and build** — Android Studio will resolve dependencies (TensorFlow Lite, LiteRT, Jetpack Compose, Media3, AndroidX) automatically via Gradle.
+3. **Run** on a device/emulator meeting the API level requirement above. No model files are needed at build time — the app downloads what it needs on first launch (see below).
 
-### Downloading the TFLite models
+### How the TFLite models get onto the device
 
-The `.tflite` model files are **not committed to this repository** (they're large binary assets) and must be downloaded separately:
+No `.tflite` file is committed to this repository or bundled into the APK. The app fetches them at
+runtime from the [`models-v1` GitHub release](https://github.com/Hardikagrwl03/On-Device-Robust-Video-Matting/releases/tag/models-v1)
+into internal storage at `filesDir/models/`, where they stay installed.
 
-**Models:** https://drive.google.com/drive/folders/1VXIsAFNzCVJ-ylWkxmL_tJxKAAFb992K?usp=drive_link
+- **On first launch** the app automatically downloads the two `gpu`-source, `auto`-downsample
+  models (MobileNetV3 ~15 MB, then ResNet50 ~104 MB, in that order). MobileNetV3 lands first
+  deliberately: the app becomes usable as soon as it does, instead of waiting on the larger file.
+- **The Models page** (from the home screen) lists all eight published builds with the converter
+  config each was created with, and installs any of them on tap. Installed entries are marked with
+  an accented card and a check.
 
-Download the models you need and copy them into `app/src/main/assets/`. Model filenames follow the convention produced by `MatteConfig`, and parsed back by `ModelCatalog` to populate the in-app config UI:
+Downloads run one at a time on a process-wide scope, so they survive navigating away from the
+Models page — but **not** the process dying; there is no resume, so a killed transfer restarts.
+
+Filenames are the release asset names verbatim, which is also what `MatteConfig` resolves to and
+what `ModelStore` looks up — one string, no mapping layer:
 
 ```
-rvm_<backbone>_<height>x<width>_ds_<downsampleTag>[_<dtype>].tflite
+rvm_<source>_<backbone>_<height>x<width>_ds_<downsampleTag>.tflite
 ```
 
+- `<source>`: `gpu` or `original` — **which copy of the RVM PyTorch source the model was traced
+  from**, a build-time property. `gpu` builds rewrite four ops the TFLite GPU delegate can't run;
+  `original` is the unmodified upstream graph. This is *not* the same thing as the compute device
+  selected at runtime — see the note below.
 - `<backbone>`: `resnet50` or `mobilenetv3`
-- `<height>x<width>`: input resolution, e.g. `720x1280`
-- `<downsampleTag>`: a fixed downsample ratio as an integer percentage (e.g. `100` for a ratio of 1.0), or `auto` when the ratio is resolved automatically from resolution
-- `<dtype>`: omitted for FP32 (the default); `int8` or `fp16` for those variants
+- `<height>x<width>`: input resolution — every published build is `720x1280`
+- `<downsampleTag>`: a fixed downsample ratio as a zero-padded integer percentage (`100` = ratio
+  1.0), or `auto` when resolved automatically from resolution
 
-For example, `MatteConfig()` (the default config) resolves to `rvm_resnet50_720x1280_ds_100.tflite`. Make sure the model file named by the config you use is present in `assets/`, or `TFLiteModelRunner` will fail to load it.
+`MatteConfig()` (the default) resolves to `rvm_gpu_resnet50_720x1280_ds_auto.tflite`. If that
+model isn't installed yet but another is, `MatteViewModel` configures the installed one instead
+rather than failing.
+
+Since the release publishes no checksums, `ModelManifest` records each asset's exact byte size and
+`ModelDownloader` verifies both the server's `Content-Length` and the bytes written against it,
+downloading into a `.part` file that is renamed only once the check passes. **If a `models-v1`
+asset is ever re-uploaded, `ModelManifest.ALL` must be updated in the same commit** or every
+install will reject the new file as a size mismatch.
+
+> **`source` vs. compute device.** `source` picks *which file* to load; the compute device
+> (`CPU`/`GPU`/`NPU`/`AUTO`) picks *which delegate* runs it. They're independent, and both are
+> selectable in the config sheet — but not every pairing can run. An `original` model still
+> contains the ops the `gpu` build rewrites (`GATHER_ND`, `RELU_0_TO_1`,
+> `STABLEHLO_REDUCE_WINDOW`), and a delegate is mandatory once attached: rather than running just
+> those ops on CPU, the GPU/NNAPI delegate refuses the whole graph and the interpreter fails to
+> build.
+>
+> So applying `original` with `GPU` or `NPU` **forces the compute device to CPU** and says so in a
+> toast, rather than accepting a selection that can't work. `AUTO` is left alone — falling back
+> through NNAPI → GPU → CPU is exactly what it's for — and `TFLiteModelRunner` still catches a
+> delegate rejection and degrades to CPU as a backstop for any pairing this check doesn't know
+> about. Since the `gpu` rewrites are numerically exact, a `gpu`-source model is never worse than
+> an `original` one at any compute device.
 
 ## Project Structure
 
@@ -64,10 +102,11 @@ app/src/main/java/dev/hamster/rvm/
 ├── MainActivity.kt                    # Entry point: hosts the home/matte screen switch, wires up MatteViewModel
 ├── Controller.kt                      # Orchestrates VideoFrameDecoder + 3x VideoFrameEncoder + MatteModule end-to-end
 ├── ui/                                # Jetpack Compose UI
-│   ├── HomeScreen.kt                  #   Landing screen: logo, tagline, Video Matte / Live Matte (coming soon) tiles
+│   ├── HomeScreen.kt                  #   Landing screen: logo, tagline, Video Matte / Live Matte / Models tiles
 │   ├── MatteScreen.kt                 #   The matting screen: configure pill, input/output previews, action bar
 │   ├── MatteViewModel.kt              #   MatteUiState + all screen logic; owns the Controller
-│   ├── ConfigSheet.kt                 #   Bottom sheet for editing MatteConfig (device/resolution/backbone/downsample/threads)
+│   ├── ConfigSheet.kt                 #   Bottom sheet for editing MatteConfig (device/source/resolution/backbone/downsample/threads)
+│   ├── ModelsScreen.kt                #   Browse and install the 8 published models; shows each one's converter config
 │   ├── theme/                         #   Fixed brand colour scheme, type scale, shape scale
 │   │   ├── Theme.kt                   #     RvmTheme - builds the light/dark ColorScheme from Color.kt
 │   │   ├── Color.kt                   #     The brand palette's tonal ramps
@@ -83,8 +122,14 @@ app/src/main/java/dev/hamster/rvm/
 ├── matte/                             # RVM matting module (implements the interfaces above)
 │   ├── MatteModule.kt                 #   runs the RVM model; confined to its own thread (see utils/ConfinedRunner.kt)
 │   ├── MatteIO.kt                     #   MatteModule's named input/output buffers
-│   ├── MatteConfig.kt                 #   resolution/backbone/dtype/downsample settings; derives the model filename
+│   ├── MatteConfig.kt                 #   source/resolution/backbone/dtype/downsample settings; derives the model filename
 │   └── MatteHiddenStates.kt           #   the 4 ConvGRU recurrent state buffers RVM passes between frames
+├── models/                            # On-demand model download and the on-disk model store
+│   ├── ModelManifest.kt               #   ModelSource + ModelSpec + the static table of all 8 release assets
+│   ├── ModelStore.kt                  #   filesDir/models/: which models are installed, length-checked
+│   ├── ModelDownloader.kt             #   HttpURLConnection streaming into a .part file, size-verified
+│   ├── ModelRepository.kt             #   Process-wide download state (StateFlow) + serial download queue
+│   └── ModelCatalog.kt                #   narrows installed models into valid config combinations
 ├── modelRunner/
 │   ├── TFLiteModelRunner.kt           #   module-agnostic TFLite Interpreter/delegate wrapper; own dedicated thread
 │   ├── ModelRunnerInterface.kt        #   the contract TFLiteModelRunner implements
@@ -96,7 +141,6 @@ app/src/main/java/dev/hamster/rvm/
 │   └── VideoFrameEncoderInterface.kt
 └── utils/
     ├── ConfinedRunner.kt              #   confines an object's work to one dedicated thread
-    ├── ModelCatalog.kt                #   parses assets/*.tflite filenames into valid config combinations
     ├── MediaStoreSaver.kt             #   copies a cache-directory output video into the shared gallery
     └── SharedBuffer.kt                #   native shared-memory-backed ByteBuffer helper
 ```
@@ -107,22 +151,24 @@ Inference modules follow a small, generic pattern so new models (segmentation, s
 
 - **`ModuleInterface<Config : ConfigInterface, IO>`** — every module implements `configure(config)`, `run(io, count)`, `reset()`, and `close()`. `Config` and `IO` are generic per module: each module defines its own config data class (e.g. `MatteConfig`) and its own named input/output data class (e.g. `MatteIO`), so callers get readable, typed fields instead of positional buffers, while the app can still drive any module polymorphically.
 - **`ConfigInterface`** — the minimal shape a config must expose (`height`, `width`, a `RuntimeConfig`) so the module can resolve and load the right `.tflite` model.
+- **`ModelManifest` / `ModelStore` / `ModelDownloader` / `ModelRepository`** — the model-delivery layer. The manifest is the single source of truth for what a valid model is (a `.tflite` in the store that it doesn't list is deliberately invisible); the store owns `filesDir/models/` and reports a model installed only when its length matches the manifest exactly; the downloader streams a release asset into a `.part` file and renames it only after verifying the size. `ModelRepository` is a process-wide singleton rather than a ViewModel, because a 104 MB download has to survive navigating away from the Models page — a `viewModelScope` would cancel it. Downloads run one at a time behind a `Mutex`, with a distinct `Queued` state so a waiting entry never renders as a stalled 0%.
 - **`HiddenStatesInterface`** — the contract for a module's recurrent state buffers (reset/rewind/put/close), used by RVM's hidden-state passing but reusable by any future recurrent model.
-- **`ModelRunnerInterface` / `TFLiteModelRunner`** — the shared, module-agnostic wrapper around a TFLite `Interpreter`: (re)builds the interpreter and delegate (GPU/NNAPI/CPU/AUTO) only when the resolved `RuntimeConfig` actually changes, and exposes `run`/`close` for single- and multi-tensor inference. Every call is confined to one dedicated thread via `ConfinedRunner`, so the interpreter is always built and invoked on the same thread — required for the GPU delegate, whose EGL context is bound to its creating thread.
+- **`ModelRunnerInterface` / `TFLiteModelRunner`** — the shared, module-agnostic wrapper around a TFLite `Interpreter`: (re)builds the interpreter and delegate (GPU/NNAPI/CPU/AUTO) only when the resolved `RuntimeConfig` actually changes, and exposes `run`/`close` for single- and multi-tensor inference. Every call is confined to one dedicated thread via `ConfinedRunner`, so the interpreter is always built and invoked on the same thread — required for the GPU delegate, whose EGL context is bound to its creating thread. It memory-maps the model out of `ModelStore` (never downloads — that would block the confined thread on unbounded network I/O), and if the selected delegate refuses the graph it degrades to CPU rather than letting the constructor's exception kill the app.
 - **`MatteModule`** — the concrete matting implementation: on `run`, combines the caller's image/foreground/alpha buffers (`MatteIO`) with its own internally-managed hidden-state buffers, invokes `TFLiteModelRunner`, and copies the freshly produced hidden states back in for the next call. Also confined to its own dedicated thread.
 - **`VideoFrameDecoder` / `VideoFrameEncoder`** — a `MediaMetadataRetriever`-based frame extractor and a `MediaCodec`/`MediaMuxer`-based frame encoder, each confined to its own thread (`MediaCodec`/`MediaMuxer`/`MediaMetadataRetriever` aren't safe to drive from more than one thread). `Controller` owns one decoder and three encoders (matte, foreground, composite), so the three encoders can each write a separate output video from the same decode/inference pass.
 - **`Controller`** — the app-level orchestrator: loads the matting model, decodes the input video frame-by-frame, runs each frame through `MatteModule`, computes the `foreground × alpha` composite, and writes all three outputs via their respective encoders — one decode/inference pass, three videos out.
-- **`MatteViewModel`** — owns the `Controller` and exposes a single `MatteUiState` `StateFlow` for the matting screen. Runs `Controller.configure()` (which can rebuild the GPU delegate — anywhere from tens of milliseconds to a few seconds) off the main thread, so the UI can show a spinner instead of appearing to hang; the first navigation into the matting screen triggers this same path, since `MatteViewModel` is created lazily on first use.
+- **`MatteViewModel`** — owns the `Controller` and exposes a single `MatteUiState` `StateFlow` for the matting screen. Runs `Controller.configure()` (which can rebuild the GPU delegate — anywhere from tens of milliseconds to a few seconds) off the main thread, so the UI can show a spinner instead of appearing to hang; the first navigation into the matting screen triggers this same path, since `MatteViewModel` is created lazily on first use. It coerces the compute device to CPU when the selected model can't run on the chosen delegate (see the `source` note above), and resolves the config against what's actually installed: if the configured model isn't downloaded yet but another is, it configures that one instead, and if nothing is installed it reports `modelMissing` and configures automatically as soon as a download lands.
 - **`ui/theme`** — a fixed brand colour scheme (not Material You dynamic colour), so the app looks the same regardless of the device's wallpaper; see `docs/ui-redesign-plan.md`.
 - **`ui/player`** — `DualVideoSync` drives a leader (input) and follower (output) Media3 `ExoPlayer` pair, keeping them aligned via small playback-speed nudges rather than continuous re-seeking; `VideoSurface` renders each into a plain `TextureView` so Compose can clip, round, and cross-fade it (a `SurfaceView`-backed `VideoView`, used earlier, can't be composited under other Compose content).
 
 ## Usage
 
-1. Launch the app; on the home screen, tap **Video Matte** (or **Live Matte** for a "coming soon" toast — real-time camera matting isn't implemented yet).
-2. Tap **Import** to pick a video from the device.
-3. Tap **Matte** to run matting over every frame; a status strip shows progress.
-4. Once done, switch between **Matte**, **Foreground**, and **Both** (the premultiplied composite) — all played back in sync with the input — and tap **Save** to copy all three to `Movies/RVM` in the gallery.
-5. Tap **Reset** to clear the current selection and start over.
+1. Launch the app. On a fresh install it starts downloading the two default models straight away; the **Video Matte** tile shows that progress and becomes available as soon as the first one lands. Tap **Models** to browse and install any of the eight published builds, or **Live Matte** for a "coming soon" toast — real-time camera matting isn't implemented yet.
+2. Tap **Video Matte**.
+3. Tap **Import** to pick a video from the device.
+4. Tap **Matte** to run matting over every frame; a status strip shows progress.
+5. Once done, switch between **Matte**, **Foreground**, and **Both** (the premultiplied composite) — all played back in sync with the input — and tap **Save** to copy all three to `Movies/RVM` in the gallery.
+6. Tap **Reset** to clear the current selection and start over.
 
 ## Logging
 
@@ -132,7 +178,9 @@ Every component logs through `android.util.Log` under its own tag, so `adb logca
 | --- | --- | --- |
 | `Controller` | `Controller.kt` | End-to-end orchestration: per-frame timing for the matte/foreground/composite pass |
 | `MatteModule` | `matte/MatteModule.kt` | Matting configuration, per-run RVM inference timing, hidden-state reset/close |
-| `TFLiteModelRunner` | `modelRunner/TFLiteModelRunner.kt` | Interpreter/delegate setup (GPU/NNAPI/CPU/AUTO), per-call inference timing, interpreter close |
+| `TFLiteModelRunner` | `modelRunner/TFLiteModelRunner.kt` | Interpreter/delegate setup (GPU/NNAPI/CPU/AUTO), delegate-rejection CPU fallback, per-call inference timing, interpreter close |
+| `ModelRepository` | `models/ModelRepository.kt` | Bootstrap enqueueing, per-model install/failure, full stack traces for failed downloads |
+| `ModelDownloader` | `models/ModelDownloader.kt` | Download start (URL, expected bytes), completion (elapsed, MB/s), failure |
 | `VideoFrameDecoder` | `video/VideoFrameDecoder.kt` | Per-frame decode timing |
 | `VideoFrameEncoder` | `video/VideoFrameEncoder.kt` | Per-frame encode timing (one line per encoder - matte, foreground, composite - per frame) |
 | `testDummyInputs` | `modelRunner/TFLiteModelRunner.kt` | `testDummyInputs()` diagnostics: input/output tensor shapes, dtypes, sizes |
@@ -160,4 +208,5 @@ To add a new on-device model (e.g. segmentation):
 2. Define `<YourModule>Config : ConfigInterface` with whatever settings your model needs, resolving to a `RuntimeConfig` (model filename, compute device, thread count).
 3. Define `<YourModule>IO` — a data class with named `ByteBuffer` fields for your model's inputs/outputs.
 4. Implement `<YourModule> : ModuleInterface<YourModuleConfig, YourModuleIO>`, using `TFLiteModelRunner` internally the same way `MatteModule` does. If your model is recurrent, implement `HiddenStatesInterface` for its state buffers. Confine the module's work to its own thread with `ConfinedRunner`, the same way `MatteModule` does, if it wraps any native/stateful resource.
-5. Wire it into `Controller` (or a new controller) alongside `MatteModule`.
+5. Add your model's `.tflite` files to `ModelManifest.ALL` (source, backbone, resolution, downsample tag and exact byte size) so they can be downloaded and so `ModelCatalog` will offer them — `TFLiteModelRunner` loads only what the manifest lists.
+6. Wire it into `Controller` (or a new controller) alongside `MatteModule`.

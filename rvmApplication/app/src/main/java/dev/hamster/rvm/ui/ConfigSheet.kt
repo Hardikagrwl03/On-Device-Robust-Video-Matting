@@ -41,7 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.hamster.rvm.R
 import dev.hamster.rvm.matte.MatteConfig
-import dev.hamster.rvm.utils.ModelCatalog
+import dev.hamster.rvm.models.ModelCatalog
+import dev.hamster.rvm.models.ModelSource
 import dev.hamster.rvm.modelRunner.RuntimeConfig
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -60,6 +61,7 @@ private fun downsampleTagLabel(tag: String, autoLabel: String, percentFormat: St
 private data class ConfigDraft(
     val device: RuntimeConfig.ComputeDevice,
     val numThreads: Int,
+    val source: ModelSource,
     val resolution: Pair<Int, Int>,
     val backbone: String,
     val downsampleTag: String
@@ -71,9 +73,9 @@ private data class ConfigDraft(
  * dismissing any other way (Cancel, scrim tap, back gesture) simply discards it, since the
  * draft lives in `remember` state scoped to this composable's lifetime.
  *
- * Every dropdown is populated from [ModelCatalog] (the `.tflite` files actually present in
- * `assets/`), and each one narrows the ones below it, so no reachable combination of
- * device/resolution/backbone/downsample-ratio can name a model file that doesn't exist.
+ * Every dropdown is populated from [ModelCatalog] (the models actually downloaded into
+ * `filesDir/models/`), and each one narrows the ones below it, so no reachable combination of
+ * source/resolution/backbone/downsample-ratio can name a model file that doesn't exist.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,6 +119,7 @@ fun ConfigSheet(
             ConfigDraft(
                 device = config.runtimeConfig.device,
                 numThreads = config.runtimeConfig.numThreads,
+                source = config.source,
                 resolution = config.height to config.width,
                 backbone = config.variant.backbone,
                 downsampleTag = if (config.runtimeConfig.modelFileName.contains("_ds_auto")) {
@@ -128,15 +131,28 @@ fun ConfigSheet(
         )
     }
 
-    val resolutions = remember { catalog.availableResolutions() }
-    val backbones = remember(draft.resolution) {
-        catalog.availableBackbones(draft.resolution.first, draft.resolution.second)
+    val sources = remember { catalog.availableSources() }
+    val resolutions = remember(draft.source) { catalog.availableResolutions(draft.source) }
+    val backbones = remember(draft.source, draft.resolution) {
+        catalog.availableBackbones(draft.source, draft.resolution.first, draft.resolution.second)
     }
-    val downsampleTags = remember(draft.backbone, draft.resolution) {
-        catalog.availableDownsampleTags(draft.backbone, draft.resolution.first, draft.resolution.second)
+    val downsampleTags = remember(draft.source, draft.backbone, draft.resolution) {
+        catalog.availableDownsampleTags(
+            draft.source,
+            draft.backbone,
+            draft.resolution.first,
+            draft.resolution.second
+        )
     }
 
-    // Narrow dependent selections whenever an upstream one changes them out of range.
+    // Narrow dependent selections whenever an upstream one changes them out of range. Resolution
+    // is in the chain now too: source is the outermost key, so changing it can empty the list
+    // below just as changing resolution can empty the backbones.
+    LaunchedEffect(resolutions) {
+        if (draft.resolution !in resolutions && resolutions.isNotEmpty()) {
+            draft = draft.copy(resolution = resolutions.first())
+        }
+    }
     LaunchedEffect(backbones) {
         if (draft.backbone !in backbones && backbones.isNotEmpty()) {
             draft = draft.copy(backbone = backbones.first())
@@ -177,6 +193,26 @@ fun ConfigSheet(
                 }
             }
 
+            // With nothing installed every dropdown below would render empty with no explanation
+            // of why, and Apply would resolve to a file that doesn't exist.
+            val hasModels = sources.isNotEmpty()
+            if (!hasModels) {
+                Text(
+                    stringResource(R.string.config_no_models),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (hasModels) {
+            LabeledDropdown(
+                label = stringResource(R.string.source_label),
+                options = sources,
+                selected = draft.source,
+                optionLabel = { it.tag },
+                onSelect = { draft = draft.copy(source = it) }
+            )
+
             LabeledDropdown(
                 label = stringResource(R.string.resolution_label),
                 options = resolutions,
@@ -202,6 +238,8 @@ fun ConfigSheet(
                 optionLabel = { downsampleTagLabel(it, downsampleAutoLabel, downsamplePercentFormat) },
                 onSelect = { draft = draft.copy(downsampleTag = it) }
             )
+
+            }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
@@ -249,6 +287,7 @@ fun ConfigSheet(
                             height = height,
                             width = width,
                             variant = variant,
+                            source = draft.source,
                             downsampleRatio = downsampleTagToRatio(draft.downsampleTag),
                             runtimeConfig = config.runtimeConfig.copy(
                                 device = draft.device,
@@ -258,7 +297,7 @@ fun ConfigSheet(
                         isApplying = true
                         onApply(newConfig)
                     },
-                    enabled = !isRunning && !isConfiguring,
+                    enabled = !isRunning && !isConfiguring && hasModels,
                     contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
                     modifier = Modifier.weight(1f)
                 ) {

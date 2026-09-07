@@ -8,6 +8,10 @@ import androidx.lifecycle.viewModelScope
 import dev.hamster.rvm.Controller
 import dev.hamster.rvm.R
 import dev.hamster.rvm.matte.MatteConfig
+import dev.hamster.rvm.models.ModelRepository
+import dev.hamster.rvm.models.ModelSource
+import dev.hamster.rvm.models.ModelSpec
+import dev.hamster.rvm.models.ModelStore
 import dev.hamster.rvm.modelRunner.RuntimeConfig
 import dev.hamster.rvm.utils.MediaStoreSaver
 import kotlinx.coroutines.CancellationException
@@ -43,7 +47,9 @@ data class MatteUiState(
     val elapsedMs: Long? = null,
     val isSaving: Boolean = false,
     val transientMessage: String? = null,
-    val isConfiguring: Boolean = false
+    val isConfiguring: Boolean = false,
+    /** No model that [config] could name is installed yet, so nothing can be configured or run. */
+    val modelMissing: Boolean = false
 ) {
     enum class Stage { IDLE, RUNNING, DONE, ERROR }
     enum class OutputKind { MATTE, FOREGROUND, BOTH }
@@ -63,6 +69,7 @@ private const val KEY_THREADS = "config_threads"
 private const val KEY_DTYPE = "config_dtype"
 private const val KEY_VARIANT = "config_variant"
 private const val KEY_DOWNSAMPLE = "config_downsample"
+private const val KEY_SOURCE = "config_source"
 
 /**
  * Owns the [Controller] and exposes [MatteUiState] as a single [StateFlow] for the matting
@@ -88,8 +95,61 @@ class MatteViewModel(
     private var runningJob: Job? = null
 
     init {
-        runConfigure(_uiState.value.config)
+        resolveAndConfigure()
+        observeModelInstalls()
     }
+
+    /**
+     * Picks a model that actually exists on disk and configures it, or records [modelMissing]
+     * when nothing is installed at all.
+     *
+     * Models are downloaded on demand now, so the configured one is not guaranteed to be present:
+     * on a fresh install nothing is, and a restored [MatteConfig] can name a model the user never
+     * downloaded. Configuring blindly would throw `FileNotFoundException` out of the interpreter.
+     *
+     * When the configured model is missing but *some other* model is installed, that one is used
+     * instead. Bootstrap downloads mobilenetv3 (15 MB) before resnet50 (104 MB) precisely so the
+     * app becomes usable early; waiting for the exact default would throw that away.
+     */
+    private fun resolveAndConfigure() {
+        val store = ModelStore(application)
+        val config = _uiState.value.config
+        if (store.isInstalled(config.runtimeConfig.modelFileName)) {
+            // A restored config can name an unsupported pairing too, since it was persisted before
+            // this check existed or before the model it names was swapped.
+            val effective = coerceUnsupportedDevice(config) ?: config
+            _uiState.update { it.copy(config = effective, modelMissing = false) }
+            runConfigure(effective)
+            return
+        }
+        val fallback = store.installedSpecs().firstOrNull()
+        if (fallback == null) {
+            _uiState.update { it.copy(modelMissing = true) }
+            return
+        }
+        val resolved = configFrom(fallback, config).let { coerceUnsupportedDevice(it) ?: it }
+        _uiState.update { it.copy(config = resolved, modelMissing = false) }
+        runConfigure(resolved)
+    }
+
+    /** Configures as soon as a download makes a usable model available. */
+    private fun observeModelInstalls() {
+        viewModelScope.launch {
+            ModelRepository.get(application).states.collect {
+                if (_uiState.value.modelMissing) resolveAndConfigure()
+            }
+        }
+    }
+
+    private fun configFrom(spec: ModelSpec, base: MatteConfig): MatteConfig = base.copy(
+        height = spec.height,
+        width = spec.width,
+        variant = MatteConfig.Variant.entries.first { it.backbone == spec.backbone },
+        // -1.0F is the "auto" sentinel MatteConfig.init resolves; passing the resolved ratio
+        // instead would name a _ds_<n> file that isn't published.
+        downsampleRatio = if (spec.downsampleTag == "auto") -1.0F else spec.downsampleTag.toInt() / 100F,
+        source = spec.source
+    )
 
     /**
      * (Re)builds the TFLite interpreter/delegate for [config] off the main thread.
@@ -105,6 +165,10 @@ class MatteViewModel(
      * on it (see [updateConfig]) still read `false` and started a second, overlapping
      * `Controller.configure` - two interpreter/GPU-delegate builds then raced on two different
      * `Dispatchers.Default` workers, and whichever lost leaked its delegate.
+     *
+     * A failure here is reported, not thrown: [Controller.configure] can fail for reasons outside
+     * the app's control (a model file removed from under it, a delegate refusing the graph), and
+     * an uncaught throw would propagate out of `viewModelScope` and kill the process.
      */
     private fun runConfigure(config: MatteConfig, onComplete: () -> Unit = {}) {
         _uiState.update { it.copy(isConfiguring = true) }
@@ -114,6 +178,17 @@ class MatteViewModel(
                     controller.configure(config)
                 }
                 onComplete()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        transientMessage = application.getString(
+                            R.string.configure_failed,
+                            e.message ?: e.javaClass.simpleName
+                        )
+                    )
+                }
             } finally {
                 _uiState.update { it.copy(isConfiguring = false) }
             }
@@ -133,6 +208,9 @@ class MatteViewModel(
         val variant = savedStateHandle.get<String>(KEY_VARIANT)
             ?.let { runCatching { MatteConfig.Variant.valueOf(it) }.getOrNull() }
             ?: return defaults
+        val source = savedStateHandle.get<String>(KEY_SOURCE)
+            ?.let { runCatching { ModelSource.valueOf(it) }.getOrNull() }
+            ?: return defaults
 
         return MatteConfig(
             height = height,
@@ -144,22 +222,16 @@ class MatteViewModel(
             ),
             dtype = dtype,
             variant = variant,
-            downsampleRatio = savedStateHandle.get<Float>(KEY_DOWNSAMPLE) ?: defaults.downsampleRatio
+            downsampleRatio = savedStateHandle.get<Float>(KEY_DOWNSAMPLE) ?: defaults.downsampleRatio,
+            source = source
         )
     }
 
     private fun persistConfig(config: MatteConfig) {
-        // config.downsampleRatio is already resolved by MatteConfig.init by this point (e.g.
-        // -1.0F "auto" becomes 0.4F for a 720x1280 config), so persisting it raw would restore
-        // as a frozen fixed ratio instead of "auto" - and that resolved ratio generally doesn't
-        // name a model file that exists (only specific fixed tags and "auto" ship as assets).
-        // The filename is where the auto/fixed distinction survives, so re-derive the sentinel
-        // from it, same as ConfigCard's downsampleDisplay does.
-        val downsampleRatio = if (config.runtimeConfig.modelFileName.contains("_ds_auto")) {
-            -1.0F
-        } else {
-            config.downsampleRatio
-        }
+        // Persist the *requested* ratio, not the resolved one: storing 0.4F instead of the
+        // -1.0F "auto" sentinel would restore as a frozen fixed ratio naming a model that was
+        // never published. See MatteConfig.requestedDownsampleRatio.
+        val downsampleRatio = config.requestedDownsampleRatio
 
         savedStateHandle[KEY_HEIGHT] = config.height
         savedStateHandle[KEY_WIDTH] = config.width
@@ -168,6 +240,7 @@ class MatteViewModel(
         savedStateHandle[KEY_DTYPE] = config.dtype.name
         savedStateHandle[KEY_VARIANT] = config.variant.name
         savedStateHandle[KEY_DOWNSAMPLE] = downsampleRatio
+        savedStateHandle[KEY_SOURCE] = config.source.name
     }
 
     fun onVideoSelected(uri: Uri) {
@@ -190,13 +263,49 @@ class MatteViewModel(
         }
     }
 
-    fun updateConfig(config: MatteConfig, onApplied: () -> Unit = {}) {
+    /**
+     * Applies [config], first forcing the compute device to CPU if the selection can't actually
+     * run (see [coerceUnsupportedDevice]). [onApplied] reports whether that happened so the caller
+     * can say so rather than silently handing back a different device than the user picked.
+     */
+    fun updateConfig(config: MatteConfig, onApplied: (deviceCoercedToCpu: Boolean) -> Unit = {}) {
         if (_uiState.value.isConfiguring) return
-        runConfigure(config) {
-            persistConfig(config)
-            _uiState.update { it.copy(config = config) }
-            onApplied()
+        val coerced = coerceUnsupportedDevice(config)
+        val effective = coerced ?: config
+        runConfigure(effective) {
+            persistConfig(effective)
+            _uiState.update { it.copy(config = effective) }
+            onApplied(coerced != null)
         }
+    }
+
+    /**
+     * Returns [config] with the device forced to CPU when the pairing cannot run, or `null` when
+     * it is already fine.
+     *
+     * An `original`-source model is the unmodified upstream graph, so it still contains the ops
+     * the converter's `model_gpu/` tree rewrites - `GATHER_ND`, `RELU_0_TO_1`,
+     * `STABLEHLO_REDUCE_WINDOW`. A delegate is mandatory once attached: rather than running those
+     * ops on CPU and the rest on the accelerator, the GPU/NNAPI delegate refuses the whole graph
+     * and `Interpreter`'s constructor throws. Offering the pairing and then failing (or silently
+     * degrading deep in [dev.hamster.rvm.modelRunner.TFLiteModelRunner]) is worse than refusing it
+     * here, where the UI can explain itself.
+     *
+     * AUTO is deliberately left alone: falling back through NNAPI -> GPU -> CPU is exactly what it
+     * is for.
+     */
+    private fun coerceUnsupportedDevice(config: MatteConfig): MatteConfig? {
+        val device = config.runtimeConfig.device
+        val unsupported = config.source == ModelSource.ORIGINAL &&
+            (device == RuntimeConfig.ComputeDevice.GPU || device == RuntimeConfig.ComputeDevice.NPU)
+        if (!unsupported) return null
+        return config.copy(
+            // requestedDownsampleRatio, not downsampleRatio: init has already resolved the "auto"
+            // sentinel, and copying the resolved value back would rebuild the model filename as
+            // _ds_040 rather than _ds_auto -- a file the release doesn't publish.
+            downsampleRatio = config.requestedDownsampleRatio,
+            runtimeConfig = config.runtimeConfig.copy(device = RuntimeConfig.ComputeDevice.CPU)
+        )
     }
 
     fun runMatting() {
