@@ -52,7 +52,9 @@ the two issues).
    *same* export and grep its log for the op name -- CPU/XNNPACK profiling
    node names carry the full Python module-path breadcrumb (e.g.
    `.../SqueezeExcitation_2/torch.nn.modules.pooling.AdaptiveAvgPool2d_avgpool`),
-   which the GPU log's fused op names don't.
+   which the GPU log's fused op names don't. `./scripts/visualize.sh --tflite
+   <export>.tflite` (see `analysis/visualize.py`) renders the same graph as
+   an SVG if you'd rather browse it visually than grep a log.
 
 3. **Rewrite with an exactly-equivalent decomposition** using only ops the
    GPU delegate already handles elsewhere in this graph (`MEAN`, `RELU`,
@@ -81,7 +83,7 @@ the two issues).
    first (fast, no TFLite/adb round-trip):
    ```bash
    ./scripts/verify.sh --tflite <old-export>.tflite  # optional sanity baseline
-   python compare.py --variant <variant>
+   ./scripts/compare.sh --variant <variant>
    ```
    `compare.py` runs `RVMWrapper(source="original")` and
    `RVMWrapper(source="gpu")` on identical inputs and prints a PASS/FAIL

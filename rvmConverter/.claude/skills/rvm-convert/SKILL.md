@@ -68,3 +68,10 @@ Verify the export is numerically correct (`rvm-verify` skill) and, if you
 care about on-device performance, benchmark it (`rvm-benchmark` skill). If
 converting with `--source gpu` for a model still showing GPU-delegate errors,
 see the `rvm-gpu-delegate-fix` skill.
+
+`./run.sh [options]` chains convert -> compare -> verify -> benchmark ->
+visualize for one variant/source/resolution combination in a single command
+(defaults: `--variant mobilenetv3 --source gpu --backend gpu`) -- see
+`./run.sh --help` or the README's `run.sh` section. It only exposes the
+options needed to chain the steps; drop to `convert.sh` directly (e.g. for
+`--variant all`) for anything beyond that.

@@ -5,9 +5,13 @@ description: Benchmark a .tflite model's inference speed and delegate coverage o
 
 # Benchmarking a .tflite model on-device
 
-Uses the prebuilt TFLite `benchmark_model` tool (`benchmark/binary/benchmark_model`,
-arm64-v8a) over `adb`. Needs a device connected (see `rvm-setup`). Prefer the
-wrapper script:
+Uses the prebuilt TFLite `benchmark_model` tool over `adb`. `benchmark/binary/`
+ships one binary per ABI (`android_aarch64_benchmark_model` for arm64-v8a,
+`android_arm_benchmark_model` for armeabi-v7a/armeabi); both scripts query the
+connected device's ABI via `adb shell getprop ro.product.cpu.abi` and push the
+matching one automatically, so you don't need to pick it yourself. An
+unrecognized ABI aborts with an error rather than pushing a binary that won't
+exec. Needs a device connected (see `rvm-setup`). Prefer the wrapper script:
 
 ```bash
 ./scripts/benchmark.sh <cpu|gpu> <model.tflite> [device_name_or_id]
@@ -18,10 +22,11 @@ wrapper script:
 applies its own default/error behavior for multiple/zero devices). Get
 connected device names/ids from `adb devices -l`.
 
-This dispatches to `benchmark/benchmark_cpu.sh` (`--num_threads=10
+This dispatches to `benchmark/benchmark_cpu.sh` (`--num_runs=10
 --enable_op_profiling=true --verbose=true`) or `benchmark/benchmark_gpu.sh`
-(`--use_gpu=true`, same profiling flags) directly if you need to run one of
-those without the `<cpu|gpu>` dispatch layer. Both push the binary + model to
+(same flags, plus `--use_gpu=true`) directly if you need to run one of those
+without the `<cpu|gpu>` dispatch layer -- both use the same `--num_runs=10`
+so CPU and GPU timings stay directly comparable. Both push the binary + model to
 `/data/local/tmp/rvm_benchmark/` on the device and merge the binary's stdout
 *and* stderr (`2>&1`) into the saved log -- stderr is where the important
 `ERROR:` lines live (unsupported-op lists, delegate failures), so don't strip

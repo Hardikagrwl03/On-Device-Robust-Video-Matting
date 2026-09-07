@@ -13,12 +13,27 @@ if [ ! -f "$MODEL" ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BINARY="$SCRIPT_DIR/binary/benchmark_model"
 MODEL_NAME="$(basename "$MODEL")"
 REMOTE_DIR="/data/local/tmp/rvm_benchmark"
 
 ADB_ARGS=()
 [ -n "$DEVICE" ] && ADB_ARGS=(-s "$DEVICE")
+
+# Pick the binary matching the device's ABI -- the prebuilt benchmark_model
+# binary is architecture-specific and a mismatched one just fails to exec.
+ABI="$(adb "${ADB_ARGS[@]}" shell getprop ro.product.cpu.abi | tr -d '\r\n')"
+case "$ABI" in
+    arm64-v8a)
+        BINARY="$SCRIPT_DIR/binary/android_aarch64_benchmark_model"
+        ;;
+    armeabi-v7a | armeabi)
+        BINARY="$SCRIPT_DIR/binary/android_arm_benchmark_model"
+        ;;
+    *)
+        echo "Unsupported device architecture: '$ABI'" >&2
+        exit 1
+        ;;
+esac
 
 adb "${ADB_ARGS[@]}" shell mkdir -p "$REMOTE_DIR"
 adb "${ADB_ARGS[@]}" push "$BINARY" "$REMOTE_DIR/benchmark_model" >/dev/null
